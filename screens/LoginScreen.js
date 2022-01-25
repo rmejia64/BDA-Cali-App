@@ -6,29 +6,45 @@ import {
     TouchableOpacity,
     View,
     Image,
+    Alert,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { auth } from "../firebase";
 import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
+    onAuthStateChanged,
 } from "firebase/auth";
+import { useNavigation } from "@react-navigation/native";
 
 const LoginScreen = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
+    const navigation = useNavigation();
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                navigation.replace("Home");
+            }
+        });
+        return unsubscribe;
+    }, []);
+
     const handleRegister = () => {
         createUserWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 const user = userCredential.user;
-                console.log(user.email);
+                console.log(`Email ${user.email} has been registered.`);
             })
             .catch((error) => {
                 if (error.code == "auth/email-already-in-use") {
-                    alert(
+                    Alert.alert(
                         `This email is already in use. Please sign in instead.`
                     );
+                } else {
+                    Alert.alert(error.code);
                 }
             });
     };
@@ -36,13 +52,19 @@ const LoginScreen = () => {
     const handleSignIn = () => {
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
-                alert(`${userCredential.user.email} is signed in.`);
+                console.log(`${userCredential.user.email} is signed in.`);
             })
             .catch((error) => {
                 if (error.code == "auth/wrong-password") {
-                    alert("Incorrect password.");
+                    Alert.alert("Bad Password", "Incorrect password.");
                 } else if (error.code == "auth/user-not-found") {
-                    alert("Email could not be found.");
+                    Alert.alert("User Not Found", "Email could not be found.");
+                } else if (error.code == "auth/invalid-email") {
+                    Alert.alert("Invalid Email", "Please enter a valid email.");
+                } else if (error.code == "auth/internal-error") {
+                    console.log(error.code);
+                } else {
+                    Alert.alert(error.code);
                 }
             });
     };
@@ -61,24 +83,24 @@ const LoginScreen = () => {
                     value={email}
                     onChangeText={(text) => setEmail(text)}
                     style={styles.input}
+                    autoCapitalize="none"
                 />
                 <TextInput
                     placeholder="Password"
                     value={password}
                     onChangeText={(text) => setPassword(text)}
                     style={styles.input}
+                    autoCapitalize="none"
                     secureTextEntry
                 />
-            </View>
-            <View style={styles.buttonContainer}>
                 <TouchableOpacity onPress={handleSignIn} style={styles.button}>
                     <Text style={styles.buttonText}>Login</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={handleRegister}
-                    style={[styles.button, styles.buttonOutline]}
-                >
-                    <Text style={styles.buttonOutlineText}>Register</Text>
+            </View>
+            <View style={styles.buttonContainer}>
+                <Text>Don't have an account?</Text>
+                <TouchableOpacity onPress={handleRegister}>
+                    <Text style={styles.hyperlink}>Sign Up</Text>
                 </TouchableOpacity>
             </View>
         </KeyboardAvoidingView>
@@ -90,53 +112,43 @@ export default LoginScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: "center",
+        justifyContent: "space-evenly",
         alignItems: "center",
-    },
-    logoContainer: {
-        padding: 50,
-    },
-    logo: {
-        width: 200,
-        height: 210,
     },
     inputContainer: {
         width: "80%",
     },
+    logo: {
+        width: 170,
+        height: 175,
+    },
     input: {
         backgroundColor: "white",
         paddingHorizontal: 15,
-        paddingVertical: 10,
-        borderRadius: 10,
-        marginTop: 5,
+        paddingVertical: 15,
+        borderRadius: 15,
+        marginTop: 10,
     },
     buttonContainer: {
         width: "60%",
         justifyContent: "center",
         alignItems: "center",
-        marginTop: 40,
     },
     button: {
         backgroundColor: "#0c4484",
         width: "100%",
+        marginTop: 30,
         padding: 15,
-        borderRadius: 10,
+        borderRadius: 15,
         alignItems: "center",
-    },
-    buttonOutline: {
-        backgroundColor: "white",
-        marginTop: 5,
-        borderColor: "#0c4484",
-        borderWidth: 2,
     },
     buttonText: {
         color: "white",
         fontWeight: "500",
         fontSize: 16,
     },
-    buttonOutlineText: {
+    hyperlink: {
         color: "#0c4484",
-        fontWeight: "500",
-        fontSize: 16,
+        fontWeight: "700",
     },
 });
