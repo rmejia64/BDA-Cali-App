@@ -5,7 +5,7 @@ import {
     ScrollView,
     RefreshControl,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { db } from '../../firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { Text, Card, Button, Icon } from 'react-native-elements';
@@ -20,7 +20,7 @@ const DonationsScreen = () => {
         return querySnapshot;
     };
 
-    const onRefresh = React.useCallback(() => {
+    const onRefresh = useCallback(() => {
         setRefreshing(true);
         setRefreshKey((oldKey) => oldKey + 1);
         setRefreshing(false);

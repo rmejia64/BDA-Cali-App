@@ -32,23 +32,6 @@ const LoginScreen = () => {
         return unsubscribe;
     }, []);
 
-    const handleRegister = () => {
-        createUserWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                const user = userCredential.user;
-                console.log(`Email ${user.email} has been registered.`);
-            })
-            .catch((error) => {
-                if (error.code == 'auth/email-already-in-use') {
-                    Alert.alert(
-                        `This email is already in use. Please sign in instead.`
-                    );
-                } else {
-                    Alert.alert(error.code);
-                }
-            });
-    };
-
     const handleSignIn = () => {
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
@@ -97,12 +80,6 @@ const LoginScreen = () => {
                     <Text style={styles.buttonText}>Login</Text>
                 </TouchableOpacity>
             </View>
-            <View style={styles.buttonContainer}>
-                <Text>Don't have an account?</Text>
-                <TouchableOpacity onPress={handleRegister}>
-                    <Text style={styles.hyperlink}>Sign Up</Text>
-                </TouchableOpacity>
-            </View>
         </KeyboardAvoidingView>
     );
 };
@@ -112,11 +89,14 @@ export default LoginScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'space-evenly',
+        justifyContent: 'center',
         alignItems: 'center',
     },
     inputContainer: {
         width: '80%',
+    },
+    logoContainer: {
+        marginBottom: 40,
     },
     logo: {
         width: 170,
