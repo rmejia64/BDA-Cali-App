@@ -24,6 +24,11 @@ const SettingsScreen = () => {
         //     </TouchableOpacity>
         // </View>
         <View>
+            {/* <ListItem onPress={navigation.push()}>
+                <ListItem.Content>
+                    <ListItem.Title>Account</ListItem.Title>
+                </ListItem.Content>
+            </ListItem> */}
             <ListItem onPress={handleSignout}>
                 <ListItem.Content>
                     <ListItem.Title>Log out</ListItem.Title>

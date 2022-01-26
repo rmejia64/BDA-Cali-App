@@ -9,7 +9,7 @@ import {
     Alert,
 } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { auth } from '../firebase';
+import { auth } from '../../firebase';
 import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
@@ -74,7 +74,7 @@ const LoginScreen = () => {
             <View style={styles.logoContainer}>
                 <Image
                     style={styles.logo}
-                    source={require('../assets/bdalogo.png')}
+                    source={require('../../assets/bdalogo.png')}
                 />
             </View>
             <View style={styles.inputContainer}>
