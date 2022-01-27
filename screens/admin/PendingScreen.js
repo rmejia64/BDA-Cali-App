@@ -10,7 +10,7 @@ import { db } from '../../firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { Text, Card, Button, Icon } from 'react-native-elements';
 
-const DonationsScreen = () => {
+const PendingScreen = () => {
     const [refreshing, setRefreshing] = useState(false);
     const [donationForms, setDonationForms] = useState([]);
     const [refreshKey, setRefreshKey] = useState(0);
@@ -78,7 +78,7 @@ const DonationsScreen = () => {
     );
 };
 
-export default DonationsScreen;
+export default PendingScreen;
 
 const styles = StyleSheet.create({
     container: {
