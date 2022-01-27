@@ -15,6 +15,7 @@ const PendingScreen = () => {
     const [donationForms, setDonationForms] = useState([]);
     const [refreshKey, setRefreshKey] = useState(0);
 
+    // grab all documents in donationForms collection from firebase
     const getDonationForms = async () => {
         const querySnapshot = await getDocs(collection(db, 'donationForms'));
         return querySnapshot;
