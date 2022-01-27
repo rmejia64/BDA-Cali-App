@@ -1,5 +1,6 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import React from 'react';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { auth } from '../firebase';
 import { useNavigation } from '@react-navigation/native';
 import { signOut } from 'firebase/auth';
@@ -17,21 +18,20 @@ const SettingsScreen = () => {
     };
 
     return (
-        // <View>
-        //     <Text>Settings</Text>
-        //     <TouchableOpacity onPress={handleSignout}>
-        //         <Text>Sign Out</Text>
-        //     </TouchableOpacity>
-        // </View>
         <View>
-            {/* <ListItem onPress={navigation.push()}>
+            <ListItem onPress={() => {}} bottomDivider>
+                <Icon name={'account'} size={20} />
                 <ListItem.Content>
                     <ListItem.Title>Account</ListItem.Title>
                 </ListItem.Content>
-            </ListItem> */}
-            <ListItem onPress={handleSignout}>
+                <ListItem.Chevron />
+            </ListItem>
+            <ListItem onPress={handleSignout} bottomDivider>
+                <Icon name={'logout'} size={20} color={'red'} />
                 <ListItem.Content>
-                    <ListItem.Title>Log out</ListItem.Title>
+                    <ListItem.Title style={{ color: 'red' }}>
+                        Log out
+                    </ListItem.Title>
                 </ListItem.Content>
             </ListItem>
         </View>

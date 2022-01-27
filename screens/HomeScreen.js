@@ -1,15 +1,36 @@
 import { StyleSheet } from 'react-native';
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import DonationsScreen from './admin/DonationsScreen';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import PendingScreen from './admin/PendingScreen';
+import AcceptedScreen from './admin/AcceptedScreen';
 import SettingsScreen from './SettingsScreen';
 
 const HomeScreen = () => {
     const Tab = createBottomTabNavigator();
 
     return (
-        <Tab.Navigator>
-            <Tab.Screen name='Donations' component={DonationsScreen} />
+        <Tab.Navigator
+            screenOptions={({ route }) => ({
+                tabBarIcon: ({ focused, color, size }) => {
+                    let iconName;
+                    if (route.name === 'Pending') {
+                        iconName = focused
+                            ? 'account-clock'
+                            : 'account-clock-outline';
+                    } else if (route.name === 'Accepted') {
+                        iconName = focused
+                            ? 'account-check'
+                            : 'account-check-outline';
+                    } else if (route.name === 'Settings') {
+                        iconName = focused ? 'cog' : 'cog-outline';
+                    }
+                    return <Icon name={iconName} size={size} color={color} />;
+                },
+            })}
+        >
+            <Tab.Screen name='Pending' component={PendingScreen} />
+            <Tab.Screen name='Accepted' component={AcceptedScreen} />
             <Tab.Screen name='Settings' component={SettingsScreen} />
         </Tab.Navigator>
     );
