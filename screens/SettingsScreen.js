@@ -30,7 +30,7 @@ const SettingsScreen = () => {
                 <Icon name={'logout'} size={20} color={'red'} />
                 <ListItem.Content>
                     <ListItem.Title style={{ color: 'red' }}>
-                        Log out
+                        Log out bitch
                     </ListItem.Title>
                 </ListItem.Content>
             </ListItem>
