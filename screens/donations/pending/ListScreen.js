@@ -6,11 +6,13 @@ import {
     RefreshControl,
 } from 'react-native';
 import React, { useEffect, useState, useCallback } from 'react';
-import { db } from '../../firebase';
+import { db } from '../../../firebase';
 import { collection, getDocs } from 'firebase/firestore';
-import { Text, Card, Button, Icon } from 'react-native-elements';
+import { Text, Card } from 'react-native-elements';
+import { useNavigation } from '@react-navigation/native';
 
-const PendingScreen = () => {
+const ListScreen = () => {
+    const navigation = useNavigation();
     const [refreshing, setRefreshing] = useState(false);
     const [donationForms, setDonationForms] = useState([]);
     const [refreshKey, setRefreshKey] = useState(0);
@@ -28,12 +30,15 @@ const PendingScreen = () => {
     }, []);
 
     useEffect(() => {
-        getDonationForms().then((querySnapshot) => {
-            let forms = [];
-            querySnapshot.forEach((doc) => {
-                forms.push({ id: doc.id, data: doc.data() });
+        // refresh will trigger when the list screen is focused
+        navigation.addListener('focus', () => {
+            getDonationForms().then((querySnapshot) => {
+                let forms = [];
+                querySnapshot.forEach((doc) => {
+                    forms.push({ id: doc.id, data: doc.data() });
+                });
+                setDonationForms(forms);
             });
-            setDonationForms(forms);
         });
     }, [refreshKey]);
 
@@ -48,7 +53,13 @@ const PendingScreen = () => {
                     return (
                         <TouchableOpacity
                             key={df.id}
-                            onPress={() => console.log(df.id)}
+                            onPress={() => {
+                                navigation.navigate('View', {
+                                    id: df.id,
+                                    email: df.data.email,
+                                    name: df.data.name,
+                                });
+                            }}
                         >
                             <Card containerStyle={styles.card}>
                                 <Card.Title>{df.data.name}</Card.Title>
@@ -79,7 +90,7 @@ const PendingScreen = () => {
     );
 };
 
-export default PendingScreen;
+export default ListScreen;
 
 const styles = StyleSheet.create({
     container: {
