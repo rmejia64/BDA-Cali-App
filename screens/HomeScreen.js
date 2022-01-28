@@ -2,8 +2,8 @@ import { StyleSheet } from 'react-native';
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import PendingScreen from './admin/PendingScreen';
-import AcceptedScreen from './admin/AcceptedScreen';
+import PendingScreen from './donations/PendingScreen';
+import AcceptedScreen from './donations/AcceptedScreen';
 import SettingsScreen from './SettingsScreen';
 
 const HomeScreen = () => {
