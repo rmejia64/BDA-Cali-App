@@ -32,13 +32,17 @@ const ListScreen = () => {
     useEffect(() => {
         // refresh will trigger when the list screen is focused
         navigation.addListener('focus', () => {
-            getDonationForms().then((querySnapshot) => {
-                let forms = [];
-                querySnapshot.forEach((doc) => {
-                    forms.push({ id: doc.id, data: doc.data() });
+            getDonationForms()
+                .then((querySnapshot) => {
+                    let forms = [];
+                    querySnapshot.forEach((doc) => {
+                        forms.push({ id: doc.id, data: doc.data() });
+                    });
+                    setDonationForms(forms);
+                })
+                .catch((error) => {
+                    console.log(error.message);
                 });
-                setDonationForms(forms);
-            });
         });
     }, [refreshKey]);
 
