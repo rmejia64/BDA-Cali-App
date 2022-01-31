@@ -7,11 +7,12 @@ import PendingScreen from './donations/PendingScreen';
 import AcceptedScreen from './donations/AcceptedScreen';
 import SettingsScreen from './settings/SettingsScreen';
 
-const HomeScreen = () => {
-    const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator();
 
+const HomeScreen = () => {
     return (
         <Tab.Navigator
+            initialRouteName='Pending'
             screenOptions={({ route }) => ({
                 tabBarIcon: ({ focused, color, size }) => {
                     let iconName;
@@ -30,6 +31,7 @@ const HomeScreen = () => {
                     }
                     return <Icon name={iconName} size={size} color={color} />;
                 },
+                headerShown: false,
             })}
         >
             <Tab.Screen name='Create' component={CreateScreen} />
