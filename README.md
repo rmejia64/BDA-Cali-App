@@ -30,4 +30,3 @@ npm install
 expo start
 ```
 Expo will prompt you with options to open the application.
-  
