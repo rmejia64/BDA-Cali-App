@@ -9,8 +9,16 @@ const Stack = createNativeStackNavigator();
 const AcceptedScreen = () => {
     return (
         <Stack.Navigator initialRouteName='List'>
-            <Stack.Screen name='List' component={ListScreen} />
-            <Stack.Screen name='View' component={ViewScreen} />
+            <Stack.Screen
+                name='List'
+                component={ListScreen}
+                options={{ title: 'Accepted' }}
+            />
+            <Stack.Screen
+                name='View'
+                component={ViewScreen}
+                options={{ title: '' }}
+            />
         </Stack.Navigator>
     );
 };
