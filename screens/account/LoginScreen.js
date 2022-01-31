@@ -6,21 +6,19 @@ import {
     TouchableOpacity,
     View,
     Image,
-    Alert,
+    Modal,
 } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { auth } from '../../firebase';
-import {
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    onAuthStateChanged,
-} from 'firebase/auth';
+import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [disabled, setDisabled] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalText, setModalText] = useState('');
 
     const navigation = useNavigation();
 
@@ -33,14 +31,24 @@ const LoginScreen = () => {
         return unsubscribe;
     }, []);
 
-    const disableLogin = () => {
-        setDisabled(true);
-        Alert.alert(
-            'Too many attempts. Please wait a minute before trying again.'
-        );
+    const errorModal = (error) => {
+        if (error === 'auth/wrong-password') {
+            setModalText('Incorrect password. Please try again.');
+        } else if (error === 'auth/user-not-found') {
+            setModalText('Email could not be found.');
+        } else if (error === 'auth/invalid-email') {
+            setModalText('Email is invalid.');
+        } else if (error === 'auth/internal-error') {
+            setModalText('Something went wrong. Please try again.');
+        } else if (error === 'auth/too-many-requests') {
+            setModalText('Too many attempts. Please try again later.');
+        } else {
+            setModalText(error);
+        }
+        setModalVisible(true);
         setTimeout(() => {
-            setDisabled(false);
-        }, 60 * 1000);
+            setModalVisible(false);
+        }, 3 * 1000);
     };
 
     const handleSignIn = () => {
@@ -49,27 +57,31 @@ const LoginScreen = () => {
                 console.log(`${userCredential.user.email} is signed in.`);
             })
             .catch((error) => {
-                if (error.code === 'auth/wrong-password') {
-                    Alert.alert('Bad Password', 'Incorrect password.');
-                } else if (error.code === 'auth/user-not-found') {
-                    Alert.alert('User Not Found', 'Email could not be found.');
-                } else if (error.code === 'auth/invalid-email') {
-                    Alert.alert('Invalid Email', 'Please enter a valid email.');
-                } else if (error.code === 'auth/internal-error') {
-                    Alert.alert(
-                        'Error',
-                        'Something went wrong. Please try again.'
-                    );
-                } else if (error.code === 'auth/too-many-requests') {
-                    disableLogin();
-                } else {
-                    Alert.alert(error.code);
-                }
+                errorModal(error.code);
             });
     };
 
     return (
         <KeyboardAvoidingView style={styles.container} behavior='padding'>
+            <Modal
+                animationType='fade'
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    setModalVisible(false);
+                }}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalView}>
+                        <Icon
+                            name='alert-circle-outline'
+                            size={30}
+                            color={'#FF6961'}
+                        />
+                        <Text style={{ marginLeft: 10 }}>{modalText}</Text>
+                    </View>
+                </View>
+            </Modal>
             <View style={styles.logoContainer}>
                 <Image
                     style={styles.logo}
@@ -92,11 +104,7 @@ const LoginScreen = () => {
                     autoCapitalize='none'
                     secureTextEntry
                 />
-                <TouchableOpacity
-                    onPress={handleSignIn}
-                    style={disabled ? styles.buttonDisabled : styles.button}
-                    disabled={disabled ? true : false}
-                >
+                <TouchableOpacity onPress={handleSignIn} style={styles.button}>
                     <Text style={styles.buttonText}>Login</Text>
                 </TouchableOpacity>
             </View>
@@ -111,6 +119,29 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+    },
+    modalView: {
+        textAlign: 'center',
+        backgroundColor: 'white',
+        borderRadius: 5,
+        padding: 20,
+        marginBottom: 40,
+        width: '80%',
+        flexDirection: 'row',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
     },
     inputContainer: {
         width: '80%',
@@ -136,14 +167,6 @@ const styles = StyleSheet.create({
     },
     button: {
         backgroundColor: '#0c4484',
-        width: '100%',
-        marginTop: 30,
-        padding: 15,
-        borderRadius: 15,
-        alignItems: 'center',
-    },
-    buttonDisabled: {
-        backgroundColor: 'gray',
         width: '100%',
         marginTop: 30,
         padding: 15,

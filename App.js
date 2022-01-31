@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './screens/account/LoginScreen';
@@ -9,6 +9,7 @@ const Stack = createNativeStackNavigator();
 export default function App() {
     return (
         <NavigationContainer>
+            <StatusBar barStyle='dark-content' />
             <Stack.Navigator
                 initialRouteName='Login'
                 screenOptions={{ headerShown: false }}
