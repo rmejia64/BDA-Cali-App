@@ -20,18 +20,18 @@ const ViewScreen = ({ route, navigation }) => {
     const acceptDonation = async () => {
         // copy donation over to acceptedDonations database
         await setDoc(doc(db, 'acceptedDonations', id), {
-            email: email,
-            name: name,
-            businessName: businessName,
-            dateCreated: dateCreated,
+            email,
+            name,
+            businessName,
+            dateCreated,
             donation: {
                 pickup: {
-                    date: date,
-                    reqPickup: reqPickup,
+                    date,
+                    reqPickup,
                 },
-                reqCertificate: reqCertificate,
-                type: type,
-                value: value,
+                reqCertificate,
+                type,
+                value,
             },
         });
 

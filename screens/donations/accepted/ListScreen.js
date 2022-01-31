@@ -103,6 +103,7 @@ const ListScreen = () => {
 
     return (
         <>
+            <Dropdown />
             <ScrollView
                 refreshControl={
                     <RefreshControl
@@ -111,7 +112,6 @@ const ListScreen = () => {
                     />
                 }
             >
-                <Dropdown />
                 <View style={styles.container}>
                     {acceptedDonations.map((d) => {
                         return (
@@ -163,7 +163,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     actionSheetButton: {
-        flex: 1,
         width: '100%',
         flexDirection: 'row',
         justifyContent: 'space-between',

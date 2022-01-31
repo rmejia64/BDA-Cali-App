@@ -104,6 +104,7 @@ const ListScreen = () => {
     return (
         <>
             {/* <SearchBar lightTheme /> */}
+            <Dropdown />
             <ScrollView
                 refreshControl={
                     <RefreshControl
@@ -112,7 +113,6 @@ const ListScreen = () => {
                     />
                 }
             >
-                <Dropdown />
                 <View style={styles.container}>
                     {pendingDonations.map((pd) => {
                         let reqPickup;
@@ -185,7 +185,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     actionSheetButton: {
-        flex: 1,
         width: '100%',
         flexDirection: 'row',
         justifyContent: 'space-between',

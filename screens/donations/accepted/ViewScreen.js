@@ -19,18 +19,18 @@ const ViewScreen = ({ route, navigation }) => {
 
     const moveBack = async () => {
         await setDoc(doc(db, 'pendingDonations', id), {
-            email: email,
-            name: name,
-            businessName: businessName,
-            dateCreated: dateCreated,
+            email,
+            name,
+            businessName,
+            dateCreated,
             donation: {
                 pickup: {
-                    date: date,
-                    reqPickup: reqPickup,
+                    date,
+                    reqPickup,
                 },
-                reqCertificate: reqCertificate,
-                type: type,
-                value: value,
+                reqCertificate,
+                type,
+                value,
             },
         });
         await deleteDoc(doc(db, 'acceptedDonations', id));
