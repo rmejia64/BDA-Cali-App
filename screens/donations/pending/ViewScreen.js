@@ -18,7 +18,6 @@ const ViewScreen = ({ route, navigation }) => {
     } = route.params;
 
     const acceptDonation = async () => {
-        console.log(route.params);
         // copy donation over to acceptedDonations database
         await setDoc(doc(db, 'acceptedDonations', id), {
             email: email,
