@@ -4,13 +4,36 @@ import { deleteDoc, doc, setDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 
 const ViewScreen = ({ route, navigation }) => {
-    const { id, email, name } = route.params;
+    const {
+        id,
+        email,
+        name,
+        businessName,
+        dateCreated,
+        date,
+        reqPickup,
+        reqCertificate,
+        type,
+        value,
+    } = route.params;
 
     const acceptDonation = async () => {
+        console.log(route.params);
         // copy donation over to acceptedDonations database
         await setDoc(doc(db, 'acceptedDonations', id), {
-            name: name,
             email: email,
+            name: name,
+            businessName: businessName,
+            dateCreated: dateCreated,
+            donation: {
+                pickup: {
+                    date: date,
+                    reqPickup: reqPickup,
+                },
+                reqCertificate: reqCertificate,
+                type: type,
+                value: value,
+            },
         });
 
         // delete donation from donationsForms database
