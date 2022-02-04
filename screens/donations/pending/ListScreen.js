@@ -30,9 +30,9 @@ const ListScreen = () => {
         const pendingDonations = collection(db, 'pendingDonations');
 
         if (filter === 'Newest') {
-            q = query(pendingDonations, orderBy('dateCreated'));
-        } else if (filter === 'Oldest') {
             q = query(pendingDonations, orderBy('dateCreated', 'desc'));
+        } else if (filter === 'Oldest') {
+            q = query(pendingDonations, orderBy('dateCreated'));
         } else if (filter === 'Name') {
             q = query(pendingDonations, orderBy('name'));
         } else if (filter === 'Type') {

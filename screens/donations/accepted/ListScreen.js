@@ -30,9 +30,9 @@ const ListScreen = () => {
         const acceptedDonations = collection(db, 'acceptedDonations');
 
         if (filter === 'Newest') {
-            q = query(acceptedDonations, orderBy('dateCreated'));
-        } else if (filter === 'Oldest') {
             q = query(acceptedDonations, orderBy('dateCreated', 'desc'));
+        } else if (filter === 'Oldest') {
+            q = query(acceptedDonations, orderBy('dateCreated'));
         } else if (filter === 'Name') {
             q = query(acceptedDonations, orderBy('name'));
         } else if (filter === 'Type') {
