@@ -7,8 +7,8 @@ const Stack = createNativeStackNavigator();
 
 const SettingsScreen = () => {
     return (
-        <Stack.Navigator initialRouteName='SettingsList'>
-            <Stack.Screen name='SettingsList' component={SettingsListScreen} />
+        <Stack.Navigator initialRouteName='Settings'>
+            <Stack.Screen name='Settings' component={SettingsListScreen} />
         </Stack.Navigator>
     );
 };
