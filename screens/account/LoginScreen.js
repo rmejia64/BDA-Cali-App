@@ -54,6 +54,7 @@ const LoginScreen = () => {
     const handleSignIn = () => {
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
+                // perform sign-in operations
                 console.log(`${userCredential.user.email} is signed in.`);
             })
             .catch((error) => {
