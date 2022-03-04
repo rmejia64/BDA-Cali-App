@@ -19,6 +19,8 @@ This project was made as a part of the Frugal Innovation Hub to develop an app f
 Follow Expo's [iOS Simulator](https://docs.expo.dev/workflow/ios-simulator/) and [Android Studio](https://docs.expo.dev/workflow/android-studio-emulator/) to run our application in a simulator.
 
 ## Get started
+
+
   
 Install the dependencies...
 ```bash
@@ -30,3 +32,7 @@ npm install
 expo start
 ```
 Expo will prompt you with options to open the application.
+
+
+Error Cases:
+" the operation was rejected by your operating system. " --> sudo npm install -g expo-cli --> type in your password 
