@@ -9,13 +9,13 @@ import { getFirestore } from 'firebase/firestore';
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: 'AIzaSyCNXcLmSdPKlFFmgVlUPFQLebtSxTqg32g',
-    authDomain: 'bda-cali-test.firebaseapp.com',
-    projectId: 'bda-cali-test',
-    storageBucket: 'bda-cali-test.appspot.com',
-    messagingSenderId: '918909202204',
-    appId: '1:918909202204:web:6019244b358a819edc14d9',
-    measurementId: 'G-318J6D1P95',
+    apiKey: 'AIzaSyAXWhM8kJOHYnMYZ0LYyRetyHexdC-E8JY',
+    authDomain: 'cali-food-bank.firebaseapp.com',
+    projectId: 'cali-food-bank',
+    storageBucket: 'cali-food-bank.appspot.com',
+    messagingSenderId: '76021301881',
+    appId: '1:76021301881:web:94965765786184e2bf8aa8',
+    measurementId: 'G-2EQPLX83Z5',
 };
 
 // Initialize Firebase
