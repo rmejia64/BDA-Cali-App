@@ -29,15 +29,16 @@ const ListScreen = () => {
         let q;
         const pendingDonations = collection(db, 'pendingDonations');
 
-        if (filter === 'Newest') {
-            q = query(pendingDonations, orderBy('dateCreated', 'desc'));
-        } else if (filter === 'Oldest') {
-            q = query(pendingDonations, orderBy('dateCreated'));
-        } else if (filter === 'Name') {
-            q = query(pendingDonations, orderBy('name'));
-        } else if (filter === 'Type') {
-            q = query(pendingDonations, orderBy('donation'), orderBy('type'));
-        }
+        // if (filter === 'Newest') {
+        //     q = query(pendingDonations, orderBy('dateCreated', 'desc'));
+        // } else if (filter === 'Oldest') {
+        //     q = query(pendingDonations, orderBy('dateCreated'));
+        // } else if (filter === 'Name') {
+        //     q = query(pendingDonations, orderBy('name'));
+        // } else if (filter === 'Type') {
+        //     q = query(pendingDonations, orderBy('donation'), orderBy('type'));
+        // }
+        q = query(pendingDonations, orderBy('dateCreated', 'desc'));
 
         try {
             const querySnapshot = await getDocs(q);
@@ -45,6 +46,7 @@ const ListScreen = () => {
             querySnapshot.forEach((doc) => {
                 forms.push({ id: doc.id, data: doc.data() });
             });
+            console.log(forms);
             setPendingDonations(forms);
         } catch (error) {
             console.log(error);
@@ -116,51 +118,44 @@ const ListScreen = () => {
                 <View style={styles.container}>
                     {pendingDonations.map((pd) => {
                         let reqPickup;
-                        if (pd.data.donation.pickup.reqPickup === 'Yes') {
-                            reqPickup = <Text>PICKUP</Text>;
-                        } else {
-                            reqPickup = <Text>DROPOFF</Text>;
-                        }
+                        // if (pd.data.donation.pickup.reqPickup === 'Yes') {
+                        //     reqPickup = <Text>PICKUP</Text>;
+                        // } else {
+                        //     reqPickup = <Text>DROPOFF</Text>;
+                        // }
                         return (
                             <TouchableOpacity
                                 key={pd.id}
                                 onPress={() => {
                                     navigation.navigate('View', {
-                                        id: pd.id,
-                                        email: pd.data.email,
-                                        name: pd.data.name,
-                                        businessName: pd.data.businessName,
-                                        dateCreated: pd.data.dateCreated,
-                                        date: pd.data.donation.pickup.date,
-                                        reqPickup:
-                                            pd.data.donation.pickup.reqPickup,
-                                        reqCertificate:
-                                            pd.data.donation.reqCertificate,
-                                        type: pd.data.donation.type,
-                                        value: pd.data.donation.value,
+                                        address: pd.data.address,
+                                        certificate: pd.data.certificate,
+                                        packaging: pd.data.certificate,
+                                        productType: pd.data.productType,
+                                        quantity: pd.data.quantity,
+                                        type: pd.data.type,
+                                        weight: pd.data.weight,
                                     });
                                 }}
                             >
                                 <Card containerStyle={styles.card}>
-                                    <Card.Title>{pd.data.name}</Card.Title>
+                                    <Card.Title>{pd.id}</Card.Title>
                                     {reqPickup}
                                     <View style={styles.cardText}>
-                                        <Text>Email</Text>
-                                        <Text>{pd.data.email}</Text>
+                                        <Text>Address</Text>
+                                        <Text>{pd.data.address}</Text>
                                     </View>
                                     <View style={styles.cardText}>
-                                        <Text>Donation Type</Text>
-                                        <Text>{pd.data.donation.type}</Text>
+                                        <Text>Certificate</Text>
+                                        <Text>{pd.data.certificate}</Text>
                                     </View>
                                     <View style={styles.cardText}>
-                                        <Text>Value</Text>
-                                        <Text>{pd.data.donation.value}</Text>
+                                        <Text>Packaging</Text>
+                                        <Text>{pd.data.packaging}</Text>
                                     </View>
                                     <View style={styles.cardText}>
-                                        <Text>Certificate Required?</Text>
-                                        <Text>
-                                            {pd.data.donation.reqCertificate}
-                                        </Text>
+                                        <Text>Product Type</Text>
+                                        <Text>{pd.data.productType}</Text>
                                     </View>
                                 </Card>
                             </TouchableOpacity>
