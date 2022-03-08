@@ -33,11 +33,23 @@ const SettingsScreen = () => {
             </ListItem>
             <ListItem
                 onPress={() => {
+                    navigation.navigate('ManageAccounts');
+                }}
+                bottomDivider
+            >
+                <Icon name={'account-multiple'} size={20} />
+                <ListItem.Content>
+                    <ListItem.Title>Manage Accounts</ListItem.Title>
+                </ListItem.Content>
+                <ListItem.Chevron />
+            </ListItem>
+            <ListItem
+                onPress={() => {
                     navigation.navigate('CreateAccount');
                 }}
                 bottomDivider
             >
-                <Icon name={'account-multiple-plus'} size={20} />
+                <Icon name={'account-plus'} size={20} />
                 <ListItem.Content>
                     <ListItem.Title>Create Account</ListItem.Title>
                 </ListItem.Content>

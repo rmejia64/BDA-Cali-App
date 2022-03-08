@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import SettingsListScreen from './SettingsListScreen';
 import EditAccountScreen from './EditAccountScreen';
+import ManageAccountsScreen from './ManageAccountsScreen';
 import CreateAccountScreen from './CreateAccountScreen';
 import LanguageScreen from './LanguageScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -20,6 +21,11 @@ const SettingsScreen = () => {
                 name='EditAccount'
                 component={EditAccountScreen}
                 options={{ title: 'My Account' }}
+            />
+            <Stack.Screen
+                name='ManageAccounts'
+                component={ManageAccountsScreen}
+                options={{ title: 'Manage Accounts' }}
             />
             <Stack.Screen
                 name='CreateAccount'

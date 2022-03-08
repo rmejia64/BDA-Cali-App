@@ -30,11 +30,10 @@ const CreateAccountScreen = () => {
     const generatePassword = () => {
         let p = firstName.substring(0, 3);
         p += lastName1.substring(0, 4);
-        if (lastName2 != '') {
+        if (lastName2 !== '') {
             p += lastName2.substring(0, 4);
         }
-        p += Math.floor(Math.random() * (9999 - 1000) + 1000);
-        console.log(p);
+        // p += Math.floor(Math.random() * (9999 - 1000) + 1000);
         return p;
     };
 
@@ -46,14 +45,11 @@ const CreateAccountScreen = () => {
                 const user = userCredential.user;
                 await setDoc(doc(db, 'users', user.uid), {
                     email: user.email,
-                    firstName: firstName,
-                    lastName1: lastName1,
-                    lastName2: lastName2,
+                    firstName,
+                    lastName1,
+                    lastName2,
                     type: accountType.toLowerCase(),
-                }).catch((e) => {
-                    console.log(e);
                 });
-                console.log(user);
                 setIsLoading(false);
             })
             .catch((error) => {
@@ -62,7 +58,7 @@ const CreateAccountScreen = () => {
                         'This email is already in use. Please use another one.'
                     );
                 } else {
-                    console.log(error);
+                    alert(error.code);
                 }
                 setIsLoading(false);
             });
@@ -87,8 +83,9 @@ const CreateAccountScreen = () => {
                         ActionSheetIOS.showActionSheetWithOptions(
                             { options: buttons, cancelButtonIndex: 0 },
                             (buttonIndex) => {
-                                if (buttonIndex != 0)
+                                if (buttonIndex != 0) {
                                     setAccountType(buttons[buttonIndex]);
+                                }
                             }
                         );
                     }}
