@@ -13,7 +13,8 @@ import {
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { deleteDoc, doc, setDoc } from 'firebase/firestore';
+import { collection, addDoc } from 'firebase/firestore';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { db } from '../../firebase';
 
 const CreateDonationScreen = () => {
@@ -35,7 +36,7 @@ const CreateDonationScreen = () => {
         },
     });
     const onSubmit = async (data) => {
-        await setDoc(doc(db, 'pendingDonations', data.id), {
+        await addDoc(collection(db, 'pendingDonations'), {
             dateCreated: new Date(),
             address: data.address,
             certificate: data.certificate,
@@ -49,267 +50,206 @@ const CreateDonationScreen = () => {
     };
 
     const handleClear = () => {
-        resetField('id'),
         resetField('type'),
-        resetField('address'),
-        resetField('certificate'),
-        resetField('productType'),
-        resetField('packaging'),
-        resetField('quantity'),
-        resetField('weight');
+            resetField('address'),
+            resetField('certificate'),
+            resetField('productType'),
+            resetField('packaging'),
+            resetField('quantity'),
+            resetField('weight');
     };
 
     return (
-        <SafeAreaView>
-            <ScrollView>
+        <KeyboardAwareScrollView>
+            <View style={styles.container}>
                 <View>
                     <Text style={styles.mainHeader}> New Form</Text>
                 </View>
-
                 <View style={styles.section}>
-                    <View style={styles.rowContainer}>
-                        <Text style={styles.topHeader}> A. General Information</Text>
-                    </View>
-                    <Text style={styles.infoHeader}>ID:</Text>
-                    <View style={styles.entry}>
-                        <Controller
-                            style={styles.entry}
-                            control={control}
-                            rules={{
-                                required: true,
-                            }}
-                            render={({
-                                field: { onChange, onBlur, value },
-                            }) => (
-                                <TextInput
-                                    style={styles.input}
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    value={value}
-                                    placeholder='70938127309'
-                                />
-                            )}
-                            name='id'
-                        />
-                        {errors.id && (
-                            <Text style={styles.error}>This is required.</Text>
-                        )}
-                    </View>
+                    <Text style={styles.header}> A. General Information</Text>
+
                     <Text style={styles.infoHeader}>Type of Client:</Text>
-                    <View style={styles.entry}>
-                        <Controller
-                            style={styles.entry}
-                            control={control}
-                            rules={{
-                                required: true,
-                            }}
-                            render={({
-                                field: { onChange, onBlur, value },
-                            }) => (
-                                <TextInput
-                                    style={styles.input}
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    value={value}
-                                    placeholder='Individual or Organization'
-                                />
-                            )}
-                            name='type'
-                        />
-                        {errors.type && (
-                            <Text style={styles.error}>This is required.</Text>
+
+                    <Controller
+                        control={control}
+                        rules={{
+                            required: true,
+                        }}
+                        render={({ field: { onChange, onBlur, value } }) => (
+                            <TextInput
+                                style={styles.input}
+                                onBlur={onBlur}
+                                onChangeText={onChange}
+                                value={value}
+                                placeholder='Individual or Organization'
+                            />
                         )}
-                    </View>
+                        name='type'
+                    />
+                    {errors.type && (
+                        <Text style={styles.error}>This is required.</Text>
+                    )}
 
                     <Text style={styles.infoHeader}>Address:</Text>
-                    <View style={styles.entry}>
-                        <Controller
-                            style={styles.entry}
-                            control={control}
-                            rules={{
-                                required: true,
-                            }}
-                            render={({
-                                field: { onChange, onBlur, value },
-                            }) => (
-                                <TextInput
-                                    style={styles.input}
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    value={value}
-                                    placeholder='Address'
-                                />
-                            )}
-                            name='address'
-                        />
-                        {errors.address && (
-                            <Text style={styles.error}>This is required.</Text>
+
+                    <Controller
+                        control={control}
+                        rules={{
+                            required: true,
+                        }}
+                        render={({ field: { onChange, onBlur, value } }) => (
+                            <TextInput
+                                style={styles.input}
+                                onBlur={onBlur}
+                                onChangeText={onChange}
+                                value={value}
+                                placeholder='Address'
+                            />
                         )}
-                    </View>
+                        name='address'
+                    />
+                    {errors.address && (
+                        <Text style={styles.error}>This is required.</Text>
+                    )}
 
                     <Text style={styles.infoHeader}>Certificate Required?</Text>
-                    <View style={styles.entry}>
-                        <Controller
-                            style={styles.entry}
-                            control={control}
-                            rules={{
-                                required: true,
-                            }}
-                            render={({
-                                field: { onChange, onBlur, value },
-                            }) => (
-                                <TextInput
-                                    style={styles.input}
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    value={value}
-                                    placeholder='Yes/No'
-                                />
-                            )}
-                            name='certificate'
-                        />
-                        {errors.certificate && (
-                            <Text style={styles.error}>This is required.</Text>
-                        )}
-                    </View>
 
+                    <Controller
+                        control={control}
+                        rules={{
+                            required: true,
+                        }}
+                        render={({ field: { onChange, onBlur, value } }) => (
+                            <TextInput
+                                style={styles.input}
+                                onBlur={onBlur}
+                                onChangeText={onChange}
+                                value={value}
+                                placeholder='Yes/No'
+                            />
+                        )}
+                        name='certificate'
+                    />
+                    {errors.certificate && (
+                        <Text style={styles.error}>This is required.</Text>
+                    )}
+                </View>
+                <View style={styles.section}>
                     <Text style={styles.header}> B. Donation Information </Text>
                     <Text style={styles.infoHeader}>Type of Product</Text>
-                    <View style={styles.entry}>
-                        <Controller
-                            style={styles.entry}
-                            control={control}
-                            rules={{
-                                required: true,
-                            }}
-                            render={({
-                                field: { onChange, onBlur, value },
-                            }) => (
-                                <TextInput
-                                    style={styles.input}
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    value={value}
-                                    placeholder='Perishable/Non-Perishable'
-                                />
-                            )}
-                            name='productType'
-                        />
-                        {errors.productType && (
-                            <Text style={styles.error}>This is required.</Text>
+
+                    <Controller
+                        control={control}
+                        rules={{
+                            required: true,
+                        }}
+                        render={({ field: { onChange, onBlur, value } }) => (
+                            <TextInput
+                                style={styles.input}
+                                onBlur={onBlur}
+                                onChangeText={onChange}
+                                value={value}
+                                placeholder='Perishable/Non-Perishable'
+                            />
                         )}
-                    </View>
+                        name='productType'
+                    />
+                    {errors.productType && (
+                        <Text style={styles.error}>This is required.</Text>
+                    )}
 
                     <Text style={styles.infoHeader}>Packaging Type</Text>
-                    <View style={styles.entry}>
-                        <Controller
-                            style={styles.entry}
-                            control={control}
-                            rules={{
-                                required: true,
-                            }}
-                            render={({
-                                field: { onChange, onBlur, value },
-                            }) => (
-                                <TextInput
-                                    style={styles.input}
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    value={value}
-                                    placeholder='Type of Packaging'
-                                />
-                            )}
-                            name='packaging'
-                        />
-                        {errors.packaging && (
-                            <Text style={styles.error}>This is required.</Text>
+
+                    <Controller
+                        control={control}
+                        rules={{
+                            required: true,
+                        }}
+                        render={({ field: { onChange, onBlur, value } }) => (
+                            <TextInput
+                                style={styles.input}
+                                onBlur={onBlur}
+                                onChangeText={onChange}
+                                value={value}
+                                placeholder='Type of Packaging'
+                            />
                         )}
-                    </View>
+                        name='packaging'
+                    />
+                    {errors.packaging && (
+                        <Text style={styles.error}>This is required.</Text>
+                    )}
 
                     <Text style={styles.infoHeader}>Quantity</Text>
-                    <View style={styles.entry}>
-                        <Controller
-                            style={styles.entry}
-                            control={control}
-                            rules={{
-                                required: true,
-                            }}
-                            render={({
-                                field: { onChange, onBlur, value },
-                            }) => (
-                                <TextInput
-                                    style={styles.input}
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    value={value}
-                                    placeholder='e.g. # of boxes'
-                                />
-                            )}
-                            name='quantity'
-                        />
-                        {errors.quantity && (
-                            <Text style={styles.error}>This is required.</Text>
+
+                    <Controller
+                        control={control}
+                        rules={{
+                            required: true,
+                        }}
+                        render={({ field: { onChange, onBlur, value } }) => (
+                            <TextInput
+                                style={styles.input}
+                                onBlur={onBlur}
+                                onChangeText={onChange}
+                                value={value}
+                                placeholder='e.g. # of boxes'
+                            />
                         )}
-                    </View>
+                        name='quantity'
+                    />
+                    {errors.quantity && (
+                        <Text style={styles.error}>This is required.</Text>
+                    )}
 
                     <Text style={styles.infoHeader}>Weight</Text>
-                    <View style={styles.entry}>
-                        <Controller
-                            style={styles.entry}
-                            control={control}
-                            rules={{
-                                required: true,
-                            }}
-                            render={({
-                                field: { onChange, onBlur, value },
-                            }) => (
-                                <TextInput
-                                    style={styles.input}
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    value={value}
-                                    placeholder='In Kilos'
-                                />
-                            )}
-                            name='weight'
-                        />
-                        {errors.weight && (
-                            <Text style={styles.error}>This is required.</Text>
-                        )}
-                    </View>
 
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity
-                            onPress={handleSubmit(onSubmit)}
-                            style={styles.button}
-                        >
-                            <Text style={styles.buttonText}>Submit</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.clearButton}>
-                        <TouchableOpacity
-                            onPress={handleClear}
-                            style={styles.button}
-                        >
-                            <Text style={styles.clearText}>Clear</Text>
-                        </TouchableOpacity>
-                    </View>
+                    <Controller
+                        control={control}
+                        rules={{
+                            required: true,
+                        }}
+                        render={({ field: { onChange, onBlur, value } }) => (
+                            <TextInput
+                                style={styles.input}
+                                onBlur={onBlur}
+                                onChangeText={onChange}
+                                value={value}
+                                placeholder='In Kilos'
+                            />
+                        )}
+                        name='weight'
+                    />
+                    {errors.weight && (
+                        <Text style={styles.error}>This is required.</Text>
+                    )}
                 </View>
-            </ScrollView>
-        </SafeAreaView>
+
+                <TouchableOpacity
+                    onPress={handleSubmit(onSubmit)}
+                    style={styles.button}
+                >
+                    <Text style={styles.buttonText}>Submit</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={handleClear}
+                    style={styles.clearButton}
+                >
+                    <Text style={styles.hyperlink}>Clear</Text>
+                </TouchableOpacity>
+            </View>
+        </KeyboardAwareScrollView>
     );
 };
 
 export default CreateDonationScreen;
 
 const styles = StyleSheet.create({
-    rowContainer: {
+    container: {
         flex: 1,
-    },
-    topHeader: {
-        fontFamily: 'Helvetica Neue',
-        fontSize: 20,
-        paddingTop: 30,
+        alignItems: 'center',
+        paddingTop: 60,
+        paddingBottom: 30,
     },
     clearButton: {
         paddingBottom: 15,
@@ -327,37 +267,39 @@ const styles = StyleSheet.create({
         paddingLeft: 4,
     },
     section: {
-        paddingTop: 0,
+        width: '80%',
+        marginTop: 20,
     },
     mainHeader: {
         fontFamily: 'Helvetica-Bold',
         fontSize: 40,
-        paddingTop: 25,
-        justifyContent: 'center',
-        textAlign: 'center',
-    },
-    buttonContainer: {
-        paddingVertical: 25,
-        paddingHorizontal: 110,
     },
     button: {
-        elevation: 8,
-        backgroundColor: '#186ae7',
-        borderRadius: 10,
-        paddingVertical: 10,
-        paddingHorizontal: 12,
+        backgroundColor: '#0c4484',
+        width: '80%',
+        marginTop: 30,
+        padding: 15,
+        borderRadius: 15,
+        alignItems: 'center',
+    },
+    clearButton: {
+        marginTop: 15,
+        textAlign: 'center',
     },
     buttonText: {
-        fontSize: 18,
-        color: '#fff',
-        fontWeight: 'bold',
-        alignSelf: 'center',
-        textTransform: 'uppercase',
+        color: 'white',
+        fontWeight: '500',
+        fontSize: 16,
+    },
+    hyperlink: {
+        color: '#0c4484',
+        fontWeight: '700',
+        fontSize: 16,
     },
     header: {
         fontFamily: 'Helvetica Neue',
         fontSize: 20,
-        paddingTop: 30,
+        paddingTop: 15,
     },
     input: {
         backgroundColor: 'white',
@@ -369,9 +311,6 @@ const styles = StyleSheet.create({
     infoHeader: {
         paddingTop: 10,
         paddingLeft: 5,
-    },
-    entry: {
-        paddingHorizontal: 5,
     },
 });
 
