@@ -1,0 +1,155 @@
+import {
+    StyleSheet,
+    Text,
+    View,
+    Modal,
+    TouchableOpacity,
+    KeyboardAvoidingView,
+    TextInput,
+} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { auth } from '../../firebase';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+
+const ResetPasswordScreen = () => {
+    const [email, setEmail] = useState('');
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalText, setModalText] = useState('');
+
+    const errorModal = (error) => {
+        // if (error === 'auth/wrong-password') {
+        //     setModalText('Incorrect password. Please try again.');
+        // } else if (error === 'auth/user-not-found') {
+        //     setModalText('Email could not be found.');
+        // } else if (error === 'auth/invalid-email') {
+        //     setModalText('Email is invalid.');
+        // } else if (error === 'auth/internal-error') {
+        //     setModalText('Something went wrong. Please try again.');
+        // } else if (error === 'auth/too-many-requests') {
+        //     setModalText('Too many attempts. Please try again later.');
+        // } else {
+        //     setModalText(error);
+        // }
+        setModalText(error);
+        setModalVisible(true);
+        setTimeout(() => {
+            setModalVisible(false);
+        }, 3 * 1000);
+    };
+
+    const handleEmailSubmit = () => {
+        sendPasswordResetEmail(auth, email)
+            .then(() => {
+                // Password reset email sent
+            })
+            .catch((error) => {
+                errorModal(error.code);
+            });
+    };
+
+    return (
+        <KeyboardAvoidingView style={styles.container} behavior='padding'>
+            <Modal
+                animationType='fade'
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    setModalVisible(false);
+                }}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalView}>
+                        <Icon
+                            name='alert-circle-outline'
+                            size={30}
+                            color={'#FF6961'}
+                        />
+                        <Text style={{ marginLeft: 10 }}>{modalText}</Text>
+                    </View>
+                </View>
+            </Modal>
+            <View style={{ width: '80%' }}>
+                <View style={{ paddingBottom: 30 }}>
+                    <Text style={styles.heading}>Password Reset</Text>
+                    <Text style={{ color: 'gray' }}>
+                        Enter your email for your account, and we will send you
+                        an email to reset your password.
+                    </Text>
+                </View>
+                <Text>Email</Text>
+                <TextInput
+                    placeholder='nombre@bdacali.com'
+                    value={email}
+                    onChangeText={(text) => setEmail(text)}
+                    style={styles.input}
+                    autoCapitalize='none'
+                />
+                <TouchableOpacity
+                    onPress={handleEmailSubmit}
+                    style={styles.button}
+                >
+                    <Text style={styles.buttonText}>Reset password</Text>
+                </TouchableOpacity>
+            </View>
+        </KeyboardAvoidingView>
+    );
+};
+
+export default ResetPasswordScreen;
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        alignItems: 'center',
+        paddingTop: 30,
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+    },
+    modalView: {
+        textAlign: 'center',
+        backgroundColor: 'white',
+        borderRadius: 5,
+        padding: 20,
+        marginBottom: 40,
+        width: '80%',
+        flexDirection: 'row',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    heading: {
+        fontSize: 20,
+        fontWeight: '700',
+        paddingBottom: 15,
+    },
+    input: {
+        backgroundColor: 'white',
+        paddingHorizontal: 15,
+        paddingVertical: 15,
+        borderRadius: 15,
+        marginTop: 10,
+    },
+    button: {
+        backgroundColor: '#0c4484',
+        width: '100%',
+        marginTop: 30,
+        padding: 15,
+        borderRadius: 15,
+        alignItems: 'center',
+    },
+    buttonText: {
+        color: 'white',
+        fontWeight: '500',
+        fontSize: 16,
+    },
+});
