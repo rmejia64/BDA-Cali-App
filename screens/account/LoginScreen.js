@@ -96,6 +96,7 @@ const LoginScreen = () => {
                     onChangeText={(text) => setEmail(text)}
                     style={styles.input}
                     autoCapitalize='none'
+                    autoComplete='email'
                 />
                 <TextInput
                     placeholder='Password'
@@ -103,12 +104,21 @@ const LoginScreen = () => {
                     onChangeText={(text) => setPassword(text)}
                     style={styles.input}
                     autoCapitalize='none'
+                    autoComplete='password'
                     secureTextEntry
                 />
                 <TouchableOpacity onPress={handleSignIn} style={styles.button}>
                     <Text style={styles.buttonText}>Login</Text>
                 </TouchableOpacity>
             </View>
+            <TouchableOpacity
+                onPress={() => {
+                    navigation.navigate('ResetPassword');
+                }}
+                style={styles.forgotPassword}
+            >
+                <Text style={styles.hyperlink}>Forgot password</Text>
+            </TouchableOpacity>
         </KeyboardAvoidingView>
     );
 };
@@ -182,5 +192,9 @@ const styles = StyleSheet.create({
     hyperlink: {
         color: '#0c4484',
         fontWeight: '700',
+    },
+    forgotPassword: {
+        marginTop: 15,
+        textAlign: 'center',
     },
 });

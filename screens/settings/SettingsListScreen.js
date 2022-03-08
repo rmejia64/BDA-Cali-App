@@ -12,21 +12,43 @@ const SettingsScreen = () => {
     const handleSignout = () => {
         signOut(auth)
             .then(() => {
-                navigation.replace('Login');
+                navigation.replace('LoginScreenManager');
             })
             .catch((error) => console.log(error.message));
     };
 
     return (
         <View>
-            <ListItem onPress={() => {}} bottomDivider>
-                <Icon name={'account'} size={20} />
+            <ListItem
+                onPress={() => {
+                    navigation.navigate('EditAccount');
+                }}
+                bottomDivider
+            >
+                <Icon name={'account-edit'} size={20} />
                 <ListItem.Content>
-                    <ListItem.Title>Account</ListItem.Title>
+                    <ListItem.Title>My Account</ListItem.Title>
                 </ListItem.Content>
                 <ListItem.Chevron />
             </ListItem>
-            <ListItem onPress={() => {}} bottomDivider>
+            <ListItem
+                onPress={() => {
+                    navigation.navigate('CreateAccount');
+                }}
+                bottomDivider
+            >
+                <Icon name={'account-multiple-plus'} size={20} />
+                <ListItem.Content>
+                    <ListItem.Title>Create Account</ListItem.Title>
+                </ListItem.Content>
+                <ListItem.Chevron />
+            </ListItem>
+            <ListItem
+                onPress={() => {
+                    navigation.navigate('Language');
+                }}
+                bottomDivider
+            >
                 <Icon name={'translate'} size={20} />
                 <ListItem.Content>
                     <ListItem.Title>Language</ListItem.Title>
