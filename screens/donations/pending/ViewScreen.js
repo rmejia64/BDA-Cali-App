@@ -5,34 +5,25 @@ import { db } from '../../../firebase';
 
 const ViewScreen = ({ route, navigation }) => {
     const {
-        id,
-        email,
-        name,
-        businessName,
-        dateCreated,
-        date,
-        reqPickup,
-        reqCertificate,
+        address,
+        certificate,
+        packaging,
+        productType,
+        quantity,
         type,
-        value,
+        weight,
     } = route.params;
 
     const acceptDonation = async () => {
         // copy donation over to acceptedDonations database
         await setDoc(doc(db, 'acceptedDonations', id), {
-            email,
-            name,
-            businessName,
-            dateCreated,
-            donation: {
-                pickup: {
-                    date,
-                    reqPickup,
-                },
-                reqCertificate,
-                type,
-                value,
-            },
+            address,
+            certificate,
+            packaging,
+            productType,
+            quantity,
+            type,
+            weight,
         });
 
         // delete donation from donationsForms database
@@ -56,9 +47,9 @@ const ViewScreen = ({ route, navigation }) => {
 
     return (
         <View style={styles.container}>
-            <Text>id: {id}</Text>
+            {/* <Text>id: {id}</Text>
             <Text>email: {email}</Text>
-            <Text>name: {name}</Text>
+            <Text>name: {name}</Text> */}
             <View style={styles.buttonsContainer}>
                 <TouchableOpacity
                     style={styles.button}
