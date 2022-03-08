@@ -156,16 +156,6 @@ const CreateAccountScreen = () => {
                         autoCapitalize='none'
                     />
                 </View>
-                <View style={styles.passwordAdvisory}>
-                    <Text>
-                        A password will be automatically generated as the first
-                        three letters of the first name and first four letters
-                        of the last names.
-                    </Text>
-                    <Text>Example</Text>
-                    <Text>Name: Adrian Ramirez Lopez</Text>
-                    <Text>Password: AdrRamiLope</Text>
-                </View>
                 <TouchableOpacity
                     onPress={createAccount}
                     style={styles.button}
@@ -173,6 +163,19 @@ const CreateAccountScreen = () => {
                 >
                     <CreateButton />
                 </TouchableOpacity>
+                <View style={styles.passwordAdvisory}>
+                    <Text style={styles.passwordAdvisoryText}>
+                        A password will be automatically generated as the first
+                        three letters of the first name and first four letters
+                        of the last names.
+                        {'\n\n'}
+                        Example
+                        {'\n\n'}
+                        Name: Adrian Ramirez Lopez
+                        {'\n'}
+                        Password: AdrRamiLope
+                    </Text>
+                </View>
             </View>
         </KeyboardAwareScrollView>
     );
@@ -192,7 +195,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         borderRadius: 15,
-        backgroundColor: 'lightgray',
+        backgroundColor: 'white',
         padding: 15,
     },
     section: {
@@ -227,6 +230,10 @@ const styles = StyleSheet.create({
     },
     passwordAdvisory: {
         width: '80%',
+        paddingTop: 40,
+    },
+    passwordAdvisoryText: {
         textAlign: 'center',
+        color: 'darkgray',
     },
 });

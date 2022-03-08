@@ -117,12 +117,6 @@ const ListScreen = () => {
             >
                 <View style={styles.container}>
                     {/* {pendingDonations.map((pd) => {
-                        let reqPickup;
-                        // if (pd.data.donation.pickup.reqPickup === 'Yes') {
-                        //     reqPickup = <Text>PICKUP</Text>;
-                        // } else {
-                        //     reqPickup = <Text>DROPOFF</Text>;
-                        // }
                         return (
                             <TouchableOpacity
                                 key={pd.id}
