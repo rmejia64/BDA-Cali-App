@@ -50,13 +50,13 @@ const CreateDonationScreen = () => {
 
     const handleClear = () => {
         resetField('id'),
-            resetField('type'),
-            resetField('address'),
-            resetField('certificate'),
-            resetField('productType'),
-            resetField('packaging'),
-            resetField('quantity'),
-            resetField('weight');
+        resetField('type'),
+        resetField('address'),
+        resetField('certificate'),
+        resetField('productType'),
+        resetField('packaging'),
+        resetField('quantity'),
+        resetField('weight');
     };
 
     return (
@@ -68,10 +68,7 @@ const CreateDonationScreen = () => {
 
                 <View style={styles.section}>
                     <View style={styles.rowContainer}>
-                        <Text style={styles.topHeader}>
-                            {' '}
-                            A. General Information{' '}
-                        </Text>
+                        <Text style={styles.topHeader}> A. General Information</Text>
                     </View>
                     <Text style={styles.infoHeader}>ID:</Text>
                     <View style={styles.entry}>
