@@ -116,7 +116,7 @@ const ListScreen = () => {
                 }
             >
                 <View style={styles.container}>
-                    {pendingDonations.map((pd) => {
+                    {/* {pendingDonations.map((pd) => {
                         let reqPickup;
                         // if (pd.data.donation.pickup.reqPickup === 'Yes') {
                         //     reqPickup = <Text>PICKUP</Text>;
@@ -160,7 +160,7 @@ const ListScreen = () => {
                                 </Card>
                             </TouchableOpacity>
                         );
-                    })}
+                    })} */}
                 </View>
             </ScrollView>
         </>
