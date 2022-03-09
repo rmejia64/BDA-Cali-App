@@ -4,30 +4,47 @@ import { deleteDoc, doc, setDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 
 const ViewScreen = ({ route, navigation }) => {
-    const {
-        address,
-        certificate,
-        packaging,
-        productType,
-        quantity,
-        type,
-        weight,
-    } = route.params;
+    const pd = route.params;
+
+    const [address, setAddress] = useState(pd.data.address);
+    const [certReq, setCertReq] = useState(pd.data.certificate);
+    const [clientType, setClientType] = useState(pd.data.client.type);
+    const [firstName, setFirstName] = useState(pd.data.client.firstName);
+    const [indivLastNames, setIndivLastNames] = useState(
+        pd.data.client.lastNames
+    );
+    const [organization, setOrganization] = useState(
+        pd.data.client.organization
+    );
+    const [dateCreated, setDateCreated] = useState(pd.data.dateCreated);
+    const [notes, setNotes] = useState(pd.data.notes);
+    const [packaging, setPackaging] = useState(pd.data.packaging);
+    const [productType, setProductType] = useState(pd.data.productType);
+    const [quantity, setQuantity] = useState(pd.data.quantity);
+    const [weight, setWeight] = useState(pd.data.weight);
+    const [isLoading, setIsLoading] = useState(false);
 
     const acceptDonation = async () => {
         // copy donation over to acceptedDonations database
-        await setDoc(doc(db, 'acceptedDonations', id), {
+        await setDoc(doc(db, 'acceptedDonations', pd.id), {
             address,
-            certificate,
+            certificate: certReq,
+            client: {
+                firstName,
+                lastNames,
+                organization,
+                clientType,
+            },
+            dateCreated,
+            notes,
             packaging,
             productType,
             quantity,
-            type,
             weight,
         });
 
         // delete donation from donationsForms database
-        await deleteDoc(doc(db, 'pendingDonations', id));
+        await deleteDoc(doc(db, 'pendingDonations', pd.id));
 
         // automatically navigate back to list view
         navigation.goBack();

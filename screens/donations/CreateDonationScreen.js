@@ -4,59 +4,158 @@ import {
     View,
     TouchableOpacity,
     Dimensions,
-    Image,
-    Button,
-    SafeAreaView,
     TextInput,
-    ScrollView,
+    ActionSheetIOS,
+    Platform,
+    ActivityIndicator,
+    Modal,
 } from 'react-native';
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { set, useForm } from 'react-hook-form';
 import { collection, addDoc } from 'firebase/firestore';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { Picker } from '@react-native-picker/picker';
 import { db } from '../../firebase';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const CreateDonationScreen = () => {
-    const {
-        control,
-        handleSubmit,
-        resetField,
-        formState: { errors },
-    } = useForm({
-        defaultValues: {
-            id: '',
-            type: '',
-            address: '',
-            certificate: '',
-            productType: '',
-            packaging: '',
-            quantity: '',
-            weight: '',
-        },
-    });
-    const onSubmit = async (data) => {
-        await addDoc(collection(db, 'pendingDonations'), {
-            dateCreated: new Date(),
-            address: data.address,
-            certificate: data.certificate,
-            packaging: data.certificate,
-            productType: data.productType,
-            quantity: data.quantity,
-            type: data.type,
-            weight: data.weight,
-        });
-        handleClear();
+    const [clientType, setClientType] = useState('Individual');
+    const [orgName, setOrgName] = useState('');
+    const [indivFirstName, setIndivFirstName] = useState('');
+    const [indivLastNames, setIndivLastNames] = useState('');
+    const [address, setAddress] = useState('');
+    const [certReq, setCertReq] = useState('Required');
+    const [productType, setProductType] = useState('Perishable');
+    const [packaging, setPackaging] = useState('');
+    const [quantity, setQuantity] = useState('');
+    const [weight, setWeight] = useState('');
+    const [notes, setNotes] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
+    const clientTypeButtons = ['Cancel', 'Individual', 'Organization'];
+    const certReqButtons = ['Cancel', 'Required', 'Not required'];
+    const productTypeButtons = ['Cancel', 'Perishable', 'Non-perishable'];
+
+    function Dropdown(props) {
+        if (Platform.OS === 'ios') {
+            let buttons = [];
+            let text = '';
+            if (props.type === 'clientType') {
+                buttons = clientTypeButtons;
+                text = clientType;
+            } else if (props.type === 'certReq') {
+                buttons = certReqButtons;
+                text = certReq;
+            } else if (props.type === 'productType') {
+                buttons = productTypeButtons;
+                text = productType;
+            }
+            return (
+                <TouchableOpacity
+                    style={styles.actionSheetButton}
+                    onPress={() => {
+                        ActionSheetIOS.showActionSheetWithOptions(
+                            { options: buttons, cancelButtonIndex: 0 },
+                            (buttonIndex) => {
+                                if (buttonIndex != 0) {
+                                    if (props.type === 'clientType') {
+                                        setClientType(buttons[buttonIndex]);
+                                    } else if (props.type === 'certReq') {
+                                        setCertReq(buttons[buttonIndex]);
+                                    } else if (props.type === 'productType') {
+                                        setProductType(buttons[buttonIndex]);
+                                    }
+                                }
+                            }
+                        );
+                    }}
+                >
+                    <Text>{text}</Text>
+                    <Icon name='menu-down' size={20} />
+                </TouchableOpacity>
+            );
+        }
+        return null;
+    }
+
+    function SubmitButton() {
+        if (isLoading) {
+            return <ActivityIndicator />;
+        } else {
+            return <Text style={styles.buttonText}>Submit</Text>;
+        }
+    }
+
+    const inputsValid = () => {
+        if (
+            clientType === 'Individual' &&
+            (indivFirstName === '' || indivLastNames === '')
+        ) {
+            return false;
+        }
+        if (clientType === 'Organization' && orgName === '') {
+            return false;
+        }
+        if (address === '') {
+            return false;
+        }
+        if (packaging === '') {
+            return false;
+        }
+        if (quantity === '') {
+            return false;
+        }
+        if (weight === '') {
+            return false;
+        }
+        return true;
+    };
+
+    const handleSubmit = async () => {
+        setIsLoading(true);
+        if (clientType === 'Individual') {
+            setOrgName('');
+        } else {
+            setIndivFirstName('');
+            setIndivLastNames('');
+        }
+
+        if (inputsValid() === true) {
+            let data = {
+                dateCreated: new Date(),
+                client: {
+                    type: clientType,
+                    organization: orgName,
+                    firstName: indivFirstName.trim(),
+                    lastNames: indivLastNames.trim(),
+                },
+                address,
+                certificate: certReq === 'Required' ? true : false,
+                productType,
+                packaging,
+                notes,
+                quantity: parseInt(quantity),
+                weight: parseInt(weight),
+            };
+
+            await addDoc(collection(db, 'pendingDonations'), data);
+            handleClear();
+        } else {
+            alert('Please fill out all required fields.');
+        }
+        setIsLoading(false);
     };
 
     const handleClear = () => {
-        resetField('type'),
-            resetField('address'),
-            resetField('certificate'),
-            resetField('productType'),
-            resetField('packaging'),
-            resetField('quantity'),
-            resetField('weight');
+        setOrgName('');
+        setIndivFirstName('');
+        setIndivLastNames('');
+        setAddress('');
+        setPackaging('');
+        setQuantity('');
+        setWeight('');
+        setNotes('');
     };
 
     return (
@@ -68,168 +167,170 @@ const CreateDonationScreen = () => {
                 <View style={styles.section}>
                     <Text style={styles.header}> A. General Information</Text>
 
-                    <Text style={styles.infoHeader}>Type of Client:</Text>
-
-                    <Controller
-                        control={control}
-                        rules={{
-                            required: true,
+                    <Text style={styles.infoHeader}>
+                        Type of Client: <Text style={{ color: 'red' }}>*</Text>
+                    </Text>
+                    <Dropdown type='clientType' />
+                    <Picker
+                        selectedValue={clientType}
+                        onValueChange={(itemValue, itemIndex) => {
+                            setClientType(itemValue);
                         }}
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <TextInput
-                                style={styles.input}
-                                onBlur={onBlur}
-                                onChangeText={onChange}
-                                value={value}
-                                placeholder='Individual or Organization'
-                            />
-                        )}
-                        name='type'
+                        style={Platform.OS === 'ios' ? { display: 'none' } : {}}
+                    >
+                        <Picker.Item label='Individual' value='Individual' />
+                        <Picker.Item
+                            label='Organization'
+                            value='Organization'
+                        />
+                    </Picker>
+
+                    <View
+                        style={
+                            clientType === 'Organization'
+                                ? { display: 'none' }
+                                : {}
+                        }
+                    >
+                        <Text style={styles.infoHeader}>
+                            First Name: <Text style={{ color: 'red' }}>*</Text>
+                        </Text>
+                        <TextInput
+                            placeholder='Adrian'
+                            value={indivFirstName}
+                            onChangeText={setIndivFirstName}
+                            style={styles.input}
+                        />
+                        <Text style={styles.infoHeader}>
+                            Last Name(s):{' '}
+                            <Text style={{ color: 'red' }}>*</Text>
+                        </Text>
+                        <TextInput
+                            placeholder='Ramirez Lopez'
+                            value={indivLastNames}
+                            onChangeText={setIndivLastNames}
+                            style={styles.input}
+                        />
+                    </View>
+                    <View
+                        style={
+                            clientType === 'Individual'
+                                ? { display: 'none' }
+                                : {}
+                        }
+                    >
+                        <Text style={styles.infoHeader}>
+                            Organization Name:{' '}
+                            <Text style={{ color: 'red' }}>*</Text>
+                        </Text>
+                        <TextInput
+                            placeholder='Coca-cola'
+                            value={orgName}
+                            onChangeText={setOrgName}
+                            style={styles.input}
+                        />
+                    </View>
+
+                    <Text style={styles.infoHeader}>
+                        Address: <Text style={{ color: 'red' }}>*</Text>
+                    </Text>
+                    <TextInput
+                        placeholder=''
+                        value={address}
+                        onChangeText={setAddress}
+                        style={styles.input}
                     />
-                    {errors.type && (
-                        <Text style={styles.error}>This is required.</Text>
-                    )}
 
-                    <Text style={styles.infoHeader}>Address:</Text>
-
-                    <Controller
-                        control={control}
-                        rules={{
-                            required: true,
+                    <Text style={styles.infoHeader}>
+                        Certificate Required?{' '}
+                        <Text style={{ color: 'red' }}>*</Text>
+                    </Text>
+                    <Dropdown type='certReq' />
+                    <Picker
+                        selectedValue={certReq}
+                        onValueChange={(itemValue, itemIndex) => {
+                            setCertReq(itemValue);
                         }}
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <TextInput
-                                style={styles.input}
-                                onBlur={onBlur}
-                                onChangeText={onChange}
-                                value={value}
-                                placeholder='Address'
-                            />
-                        )}
-                        name='address'
-                    />
-                    {errors.address && (
-                        <Text style={styles.error}>This is required.</Text>
-                    )}
-
-                    <Text style={styles.infoHeader}>Certificate Required?</Text>
-
-                    <Controller
-                        control={control}
-                        rules={{
-                            required: true,
-                        }}
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <TextInput
-                                style={styles.input}
-                                onBlur={onBlur}
-                                onChangeText={onChange}
-                                value={value}
-                                placeholder='Yes/No'
-                            />
-                        )}
-                        name='certificate'
-                    />
-                    {errors.certificate && (
-                        <Text style={styles.error}>This is required.</Text>
-                    )}
+                        style={Platform.OS === 'ios' ? { display: 'none' } : {}}
+                    >
+                        <Picker.Item label='Required' value='Required' />
+                        <Picker.Item
+                            label='Not required'
+                            value='Not required'
+                        />
+                    </Picker>
                 </View>
                 <View style={styles.section}>
                     <Text style={styles.header}> B. Donation Information </Text>
-                    <Text style={styles.infoHeader}>Type of Product</Text>
-
-                    <Controller
-                        control={control}
-                        rules={{
-                            required: true,
+                    <Text style={styles.infoHeader}>
+                        Type of Product <Text style={{ color: 'red' }}>*</Text>
+                    </Text>
+                    <Dropdown type='productType' />
+                    <Picker
+                        selectedValue={productType}
+                        onValueChange={(itemValue, itemIndex) => {
+                            setProductType(itemValue);
                         }}
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <TextInput
-                                style={styles.input}
-                                onBlur={onBlur}
-                                onChangeText={onChange}
-                                value={value}
-                                placeholder='Perishable/Non-Perishable'
-                            />
-                        )}
-                        name='productType'
+                        style={Platform.OS === 'ios' ? { display: 'none' } : {}}
+                    >
+                        <Picker.Item label='Perishable' value='Perishable' />
+                        <Picker.Item
+                            label='Non-perishable'
+                            value='Non-perishable'
+                        />
+                    </Picker>
+
+                    <Text style={styles.infoHeader}>
+                        Packaging Type <Text style={{ color: 'red' }}>*</Text>
+                    </Text>
+                    <TextInput
+                        placeholder='p. ej. Boxes, Palettes'
+                        value={packaging}
+                        onChangeText={setPackaging}
+                        style={styles.input}
                     />
-                    {errors.productType && (
-                        <Text style={styles.error}>This is required.</Text>
-                    )}
 
-                    <Text style={styles.infoHeader}>Packaging Type</Text>
-
-                    <Controller
-                        control={control}
-                        rules={{
-                            required: true,
-                        }}
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <TextInput
-                                style={styles.input}
-                                onBlur={onBlur}
-                                onChangeText={onChange}
-                                value={value}
-                                placeholder='Type of Packaging'
-                            />
-                        )}
-                        name='packaging'
+                    <Text style={styles.infoHeader}>
+                        Quantity <Text style={{ color: 'red' }}>*</Text>
+                    </Text>
+                    <TextInput
+                        placeholder='p. ej. # of boxes'
+                        value={quantity}
+                        onChangeText={(text) =>
+                            setQuantity(text.replace(/[^0-9]/g, ''))
+                        }
+                        style={styles.input}
+                        keyboardType='numeric'
                     />
-                    {errors.packaging && (
-                        <Text style={styles.error}>This is required.</Text>
-                    )}
 
-                    <Text style={styles.infoHeader}>Quantity</Text>
-
-                    <Controller
-                        control={control}
-                        rules={{
-                            required: true,
-                        }}
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <TextInput
-                                style={styles.input}
-                                onBlur={onBlur}
-                                onChangeText={onChange}
-                                value={value}
-                                placeholder='e.g. # of boxes'
-                            />
-                        )}
-                        name='quantity'
+                    <Text style={styles.infoHeader}>
+                        Weight (kg) <Text style={{ color: 'red' }}>*</Text>
+                    </Text>
+                    <TextInput
+                        placeholder='p. ej. 100'
+                        value={weight}
+                        onChangeText={(text) =>
+                            setWeight(text.replace(/[^0-9]/g, ''))
+                        }
+                        style={styles.input}
+                        keyboardType='numeric'
                     />
-                    {errors.quantity && (
-                        <Text style={styles.error}>This is required.</Text>
-                    )}
 
-                    <Text style={styles.infoHeader}>Weight</Text>
-
-                    <Controller
-                        control={control}
-                        rules={{
-                            required: true,
-                        }}
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <TextInput
-                                style={styles.input}
-                                onBlur={onBlur}
-                                onChangeText={onChange}
-                                value={value}
-                                placeholder='In Kilos'
-                            />
-                        )}
-                        name='weight'
+                    <Text style={styles.infoHeader}>Notes</Text>
+                    <TextInput
+                        value={notes}
+                        onChangeText={setNotes}
+                        multiLine={true}
+                        style={[styles.input, styles.largeInput]}
                     />
-                    {errors.weight && (
-                        <Text style={styles.error}>This is required.</Text>
-                    )}
                 </View>
 
                 <TouchableOpacity
-                    onPress={handleSubmit(onSubmit)}
+                    onPress={handleSubmit}
                     style={styles.button}
+                    disabled={isLoading}
                 >
-                    <Text style={styles.buttonText}>Submit</Text>
+                    <SubmitButton />
                 </TouchableOpacity>
                 <TouchableOpacity
                     onPress={handleClear}
@@ -245,6 +346,16 @@ const CreateDonationScreen = () => {
 export default CreateDonationScreen;
 
 const styles = StyleSheet.create({
+    actionSheetButton: {
+        width: '100%',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderRadius: 15,
+        backgroundColor: 'white',
+        padding: 15,
+        marginTop: 10,
+    },
     container: {
         flex: 1,
         alignItems: 'center',
@@ -262,12 +373,8 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         textTransform: 'uppercase',
     },
-    error: {
-        color: 'red',
-        paddingLeft: 4,
-    },
     section: {
-        width: '80%',
+        width: '85%',
         marginTop: 20,
     },
     mainHeader: {
@@ -276,7 +383,7 @@ const styles = StyleSheet.create({
     },
     button: {
         backgroundColor: '#0c4484',
-        width: '80%',
+        width: '85%',
         marginTop: 30,
         padding: 15,
         borderRadius: 15,
@@ -307,6 +414,9 @@ const styles = StyleSheet.create({
         paddingVertical: 15,
         borderRadius: 15,
         marginTop: 10,
+    },
+    largeInput: {
+        textAlignVertical: 'top',
     },
     infoHeader: {
         paddingTop: 10,
