@@ -10,9 +10,7 @@ const ViewScreen = ({ route, navigation }) => {
     const [certReq, setCertReq] = useState(pd.data.certificate);
     const [clientType, setClientType] = useState(pd.data.client.type);
     const [firstName, setFirstName] = useState(pd.data.client.firstName);
-    const [indivLastNames, setIndivLastNames] = useState(
-        pd.data.client.lastNames
-    );
+    const [lastNames, setLastNames] = useState(pd.data.client.lastNames);
     const [organization, setOrganization] = useState(
         pd.data.client.organization
     );
