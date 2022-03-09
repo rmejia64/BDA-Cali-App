@@ -58,7 +58,7 @@ const CreateDonationScreen = () => {
                         ActionSheetIOS.showActionSheetWithOptions(
                             { options: buttons, cancelButtonIndex: 0 },
                             (buttonIndex) => {
-                                if (buttonIndex != 0) {
+                                if (buttonIndex !== 0) {
                                     if (props.type === 'clientType') {
                                         setClientType(buttons[buttonIndex]);
                                     } else if (props.type === 'certReq') {

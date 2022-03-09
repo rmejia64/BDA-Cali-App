@@ -69,7 +69,7 @@ const ListScreen = () => {
                         ActionSheetIOS.showActionSheetWithOptions(
                             { options: buttons, cancelButtonIndex: 0 },
                             (buttonIndex) => {
-                                if (buttonIndex != 0) {
+                                if (buttonIndex !== 0) {
                                     setFilter(buttons[buttonIndex]);
                                     setRefreshKey((oldKey) => oldKey + 1);
                                 }
