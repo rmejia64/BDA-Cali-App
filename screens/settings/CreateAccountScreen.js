@@ -56,7 +56,7 @@ const CreateAccountScreen = () => {
                         firstName,
                         lastName1,
                         lastName2,
-                        type: accountType.toLowerCase(),
+                        type: accountType,
                     });
                     setIsLoading(false);
                     Alert.alert(

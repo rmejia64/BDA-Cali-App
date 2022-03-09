@@ -404,7 +404,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     header: {
-        fontFamily: 'Helvetica Neue',
         fontSize: 20,
         paddingTop: 15,
     },
