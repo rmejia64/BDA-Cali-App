@@ -6,13 +6,14 @@ import {
     TouchableOpacity,
     KeyboardAvoidingView,
     TextInput,
+    Alert,
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { auth } from '../../firebase';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const ResetPasswordScreen = () => {
+const ResetPasswordScreen = ({ route, navigation }) => {
     const [email, setEmail] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
     const [modalText, setModalText] = useState('');
@@ -42,6 +43,11 @@ const ResetPasswordScreen = () => {
         sendPasswordResetEmail(auth, email)
             .then(() => {
                 // Password reset email sent
+                Alert.alert(
+                    'Email sent',
+                    'Please check your email for instructions to reset your password.'
+                );
+                navigation.goBack();
             })
             .catch((error) => {
                 errorModal(error.code);

@@ -7,8 +7,8 @@ import {
     TouchableOpacity,
     TextInput,
     ActivityIndicator,
+    Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import React, { useState } from 'react';
 import { db, auth } from '../../firebase';
@@ -24,8 +24,6 @@ const CreateAccountScreen = () => {
     const [lastName2, setLastName2] = useState('');
     const [accountType, setAccountType] = useState('Driver');
     const [isLoading, setIsLoading] = useState(false);
-
-    const navigation = useNavigation();
 
     const generatePassword = () => {
         let p = firstName.substring(0, 3);
@@ -61,18 +59,34 @@ const CreateAccountScreen = () => {
                         type: accountType.toLowerCase(),
                     });
                     setIsLoading(false);
+                    Alert.alert(
+                        'User created!',
+                        `Type: ${accountType}\nEmail: ${user.email}\nPassword: ${pass}`
+                    );
+                    clearFields();
+                    // auth.currentUser gets changed to the user that was just created here
+                    // we have to make sure that the user stays the same after creation
                 })
                 .catch((error) => {
-                    if (error.code == 'auth/email-already-in-use') {
-                        alert(
-                            'This email is already in use. Please use another one.'
-                        );
+                    let errText = '';
+                    if (error.code === 'auth/email-already-in-use') {
+                        errText += 'An account with this email already exists.';
+                    } else if (error.code === 'auth/internal-error') {
+                        errText += 'Something went wrong, please try again.';
                     } else {
-                        alert(error.code);
+                        errText += error.code;
                     }
+                    Alert.alert('Error', errText);
                     setIsLoading(false);
                 });
         }
+    };
+
+    const clearFields = () => {
+        setFirstName('');
+        setLastName1('');
+        setLastName2('');
+        setEmail('');
     };
 
     function CreateButton() {
