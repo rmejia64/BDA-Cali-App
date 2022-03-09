@@ -11,7 +11,7 @@ import { Picker } from '@react-native-picker/picker';
 import React, { useEffect, useState } from 'react';
 import { db } from '../../../firebase';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
-import { Text, Card, SearchBar } from 'react-native-elements';
+import { Text, Chip, SearchBar, ListItem } from 'react-native-elements';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -46,26 +46,33 @@ const ListScreen = () => {
             querySnapshot.forEach((doc) => {
                 forms.push({ id: doc.id, data: doc.data() });
             });
-            console.log(forms);
             setPendingDonations(forms);
         } catch (error) {
             console.log(error);
         }
     };
 
+    const getAge = (date) => {
+        const difference = new Date().getTime() - date.getTime();
+        const result = Math.round(difference) / (1000 * 3600 * 24);
+        return result < 1 ? 'New' : result.toFixed(0) + ' days old';
+    };
+
     function Dropdown() {
         const platform = Platform.OS;
         if (platform === 'ios') {
-            const buttons = ['Newest', 'Oldest', 'Name', 'Type'];
+            const buttons = ['Cancel', 'Newest', 'Oldest', 'Name', 'Type'];
             return (
                 <TouchableOpacity
                     style={styles.actionSheetButton}
                     onPress={() => {
                         ActionSheetIOS.showActionSheetWithOptions(
-                            { options: buttons },
+                            { options: buttons, cancelButtonIndex: 0 },
                             (buttonIndex) => {
-                                setFilter(buttons[buttonIndex]);
-                                setRefreshKey((oldKey) => oldKey + 1);
+                                if (buttonIndex !== 0) {
+                                    setFilter(buttons[buttonIndex]);
+                                    setRefreshKey((oldKey) => oldKey + 1);
+                                }
                             }
                         );
                     }}
@@ -115,46 +122,56 @@ const ListScreen = () => {
                     />
                 }
             >
-                <View style={styles.container}>
-                    {/* {pendingDonations.map((pd) => {
+                <View style={styles.donations}>
+                    {pendingDonations.map((pd, idx) => {
                         return (
-                            <TouchableOpacity
+                            <ListItem.Swipeable
                                 key={pd.id}
                                 onPress={() => {
                                     navigation.navigate('View', {
-                                        address: pd.data.address,
-                                        certificate: pd.data.certificate,
-                                        packaging: pd.data.certificate,
-                                        productType: pd.data.productType,
-                                        quantity: pd.data.quantity,
-                                        type: pd.data.type,
-                                        weight: pd.data.weight,
+                                        id: pd.id,
+                                        data: pd.data,
                                     });
                                 }}
+                                topDivider={idx === 0}
+                                bottomDivider
                             >
-                                <Card containerStyle={styles.card}>
-                                    <Card.Title>{pd.id}</Card.Title>
-                                    {reqPickup}
-                                    <View style={styles.cardText}>
-                                        <Text>Address</Text>
-                                        <Text>{pd.data.address}</Text>
+                                <ListItem.Content>
+                                    <ListItem.Title>
+                                        {pd.data.client.organization !== ''
+                                            ? pd.data.client.organization
+                                            : pd.data.client.firstName +
+                                              ' ' +
+                                              pd.data.client.lastNames}
+                                    </ListItem.Title>
+                                    <ListItem.Subtitle>
+                                        {pd.data.dateCreated
+                                            .toDate()
+                                            .toLocaleDateString('es-CO')}
+                                    </ListItem.Subtitle>
+                                    <View style={styles.chips}>
+                                        <Chip
+                                            title={getAge(
+                                                pd.data.dateCreated.toDate()
+                                            )}
+                                            color={'black'}
+                                            containerStyle={{ marginRight: 5 }}
+                                        />
+                                        {pd.data.certificate ? (
+                                            <Chip
+                                                title='Certificate'
+                                                disabled={!pd.data.certificate}
+                                                containerStyle={{
+                                                    marginRight: 5,
+                                                }}
+                                            />
+                                        ) : null}
                                     </View>
-                                    <View style={styles.cardText}>
-                                        <Text>Certificate</Text>
-                                        <Text>{pd.data.certificate}</Text>
-                                    </View>
-                                    <View style={styles.cardText}>
-                                        <Text>Packaging</Text>
-                                        <Text>{pd.data.packaging}</Text>
-                                    </View>
-                                    <View style={styles.cardText}>
-                                        <Text>Product Type</Text>
-                                        <Text>{pd.data.productType}</Text>
-                                    </View>
-                                </Card>
-                            </TouchableOpacity>
+                                </ListItem.Content>
+                                <ListItem.Chevron />
+                            </ListItem.Swipeable>
                         );
-                    })} */}
+                    })}
                 </View>
             </ScrollView>
         </>
@@ -166,18 +183,33 @@ export default ListScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        width: '100%',
+        // alignItems: 'center',
         paddingBottom: 10,
+        marginTop: 20,
     },
     cardText: {
+        flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-between',
     },
-    actionSheetButton: {
+    donations: {
         width: '100%',
+    },
+    actionSheetButton: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        borderRadius: 15,
+        backgroundColor: 'white',
         padding: 15,
+        margin: 15,
+    },
+    listItem: {
+        width: '100%',
+        flexDirection: 'column',
+    },
+    chips: {
+        flex: 1,
+        flexDirection: 'row',
     },
 });

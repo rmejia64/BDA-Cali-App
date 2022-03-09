@@ -37,31 +37,42 @@ const CreateAccountScreen = () => {
         return p;
     };
 
+    const inputsValid = () => {
+        if (firstName === '' || email === '') {
+            alert('Please fill out all required fields.');
+            setIsLoading(false);
+            return false;
+        }
+        return true;
+    };
+
     const createAccount = () => {
         setIsLoading(true);
-        const pass = generatePassword();
-        createUserWithEmailAndPassword(auth, email, pass)
-            .then(async (userCredential) => {
-                const user = userCredential.user;
-                await setDoc(doc(db, 'users', user.uid), {
-                    email: user.email,
-                    firstName,
-                    lastName1,
-                    lastName2,
-                    type: accountType.toLowerCase(),
+        if (inputsValid()) {
+            const pass = generatePassword();
+            createUserWithEmailAndPassword(auth, email, pass)
+                .then(async (userCredential) => {
+                    const user = userCredential.user;
+                    await setDoc(doc(db, 'users', user.uid), {
+                        email: user.email,
+                        firstName,
+                        lastName1,
+                        lastName2,
+                        type: accountType.toLowerCase(),
+                    });
+                    setIsLoading(false);
+                })
+                .catch((error) => {
+                    if (error.code == 'auth/email-already-in-use') {
+                        alert(
+                            'This email is already in use. Please use another one.'
+                        );
+                    } else {
+                        alert(error.code);
+                    }
+                    setIsLoading(false);
                 });
-                setIsLoading(false);
-            })
-            .catch((error) => {
-                if (error.code == 'auth/email-already-in-use') {
-                    alert(
-                        'This email is already in use. Please use another one.'
-                    );
-                } else {
-                    alert(error.code);
-                }
-                setIsLoading(false);
-            });
+        }
     };
 
     function CreateButton() {
@@ -83,7 +94,7 @@ const CreateAccountScreen = () => {
                         ActionSheetIOS.showActionSheetWithOptions(
                             { options: buttons, cancelButtonIndex: 0 },
                             (buttonIndex) => {
-                                if (buttonIndex != 0) {
+                                if (buttonIndex !== 0) {
                                     setAccountType(buttons[buttonIndex]);
                                 }
                             }
@@ -124,14 +135,18 @@ const CreateAccountScreen = () => {
                 </View>
                 <View style={styles.section}>
                     <Text style={styles.heading}>Name</Text>
-                    <Text>First Name *</Text>
+                    <Text>
+                        First Name <Text style={{ color: 'red' }}>*</Text>
+                    </Text>
                     <TextInput
                         placeholder='Adrian'
                         value={firstName}
                         onChangeText={setFirstName}
                         style={styles.input}
                     />
-                    <Text>Last Name 1 *</Text>
+                    <Text>
+                        Last Name 1 <Text style={{ color: 'red' }}>*</Text>
+                    </Text>
                     <TextInput
                         placeholder='Ramirez'
                         value={lastName1}
@@ -147,7 +162,9 @@ const CreateAccountScreen = () => {
                     />
                 </View>
                 <View style={styles.section}>
-                    <Text style={styles.heading}>Email</Text>
+                    <Text style={styles.heading}>
+                        Email <Text style={{ color: 'red' }}>*</Text>
+                    </Text>
                     <TextInput
                         placeholder='nombre@bdacali.com'
                         value={email}
@@ -169,7 +186,7 @@ const CreateAccountScreen = () => {
                         three letters of the first name and first four letters
                         of the last names.
                         {'\n\n'}
-                        Example
+                        Example:
                         {'\n\n'}
                         Name: Adrian Ramirez Lopez
                         {'\n'}
