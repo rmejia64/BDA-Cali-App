@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 
-const EditAccountScreen = () => {
+const ChangePasswordScreen = () => {
     return (
         <View>
-            <Text>EditAccountScreen</Text>
+            <Text>ChangePasswordScreen</Text>
         </View>
     );
 };
 
-export default EditAccountScreen;
+export default ChangePasswordScreen;
 
 const styles = StyleSheet.create({});

@@ -378,7 +378,6 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     mainHeader: {
-        fontFamily: 'Helvetica-Bold',
         fontSize: 40,
     },
     button: {

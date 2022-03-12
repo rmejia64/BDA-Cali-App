@@ -1,9 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native';
 import SettingsListScreen from './SettingsListScreen';
-import EditAccountScreen from './EditAccountScreen';
 import ManageAccountsScreen from './ManageAccountsScreen';
 import CreateAccountScreen from './CreateAccountScreen';
 import LanguageScreen from './LanguageScreen';
+import EditAccountListScreen from './editAccount/EditAccountListScreen';
+import ChangePasswordScreen from './editAccount/ChangePasswordScreen';
+import ChangeEmailScreen from './editAccount/ChangeEmailScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 
@@ -18,9 +20,19 @@ const SettingsScreen = () => {
                 options={{ title: 'Settings' }}
             />
             <Stack.Screen
-                name='EditAccount'
-                component={EditAccountScreen}
+                name='EditAccountList'
+                component={EditAccountListScreen}
                 options={{ title: 'My Account' }}
+            />
+            <Stack.Screen
+                name='ChangeEmail'
+                component={ChangeEmailScreen}
+                options={{ title: 'Change Email' }}
+            />
+            <Stack.Screen
+                name='ChangePassword'
+                component={ChangePasswordScreen}
+                options={{ title: 'Change Password' }}
             />
             <Stack.Screen
                 name='ManageAccounts'
