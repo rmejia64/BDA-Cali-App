@@ -21,7 +21,7 @@ const SettingsScreen = () => {
         <View>
             <ListItem
                 onPress={() => {
-                    navigation.navigate('EditAccount');
+                    navigation.push('EditAccountList');
                 }}
                 bottomDivider
             >
@@ -33,7 +33,7 @@ const SettingsScreen = () => {
             </ListItem>
             <ListItem
                 onPress={() => {
-                    navigation.navigate('ManageAccounts');
+                    navigation.push('ManageAccounts');
                 }}
                 bottomDivider
             >
@@ -45,7 +45,7 @@ const SettingsScreen = () => {
             </ListItem>
             <ListItem
                 onPress={() => {
-                    navigation.navigate('CreateAccount');
+                    navigation.push('CreateAccount');
                 }}
                 bottomDivider
             >
@@ -57,7 +57,7 @@ const SettingsScreen = () => {
             </ListItem>
             <ListItem
                 onPress={() => {
-                    navigation.navigate('Language');
+                    navigation.push('Language');
                 }}
                 bottomDivider
             >
