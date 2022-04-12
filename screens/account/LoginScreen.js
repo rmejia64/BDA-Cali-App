@@ -9,23 +9,21 @@ import {
     Modal,
 } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { auth } from '../../firebase';
+import { auth, db } from '../../firebase';
 import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
-import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { doc, getDoc } from 'firebase/firestore';
 
-const LoginScreen = () => {
+const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
     const [modalText, setModalText] = useState('');
 
-    const navigation = useNavigation();
-
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
-                navigation.replace('Home');
+                navigation.replace('HomeScreen');
             }
         });
         return unsubscribe;
@@ -55,7 +53,17 @@ const LoginScreen = () => {
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 // perform sign-in operations
-                console.log(`${userCredential.user.email} is signed in.`);
+                // console.log(`${userCredential.user.email} is signed in.`);
+                getDoc(doc(db, 'users', userCredential.user.uid))
+                    .then((userSnap) => {
+                        if (!userSnap.exists) {
+                            alert('User does not exist anymore.');
+                            return;
+                        }
+                    })
+                    .catch((error) => {
+                        alert(error);
+                    });
             })
             .catch((error) => {
                 errorModal(error.code);

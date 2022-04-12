@@ -1,6 +1,8 @@
 import { StyleSheet } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { AuthContext } from '../auth/Auth';
+import { auth } from '../firebase';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CreateScreen from './donations/CreateDonationScreen';
 import PendingScreen from './donations/PendingScreen';
@@ -10,6 +12,11 @@ import SettingsScreen from './settings/SettingsScreen';
 const Tab = createBottomTabNavigator();
 
 const HomeScreen = () => {
+    let [user] = useState(AuthContext);
+    user = user._currentValue.user;
+
+    const createUser = user.type === 'Administrator';
+
     return (
         <Tab.Navigator
             initialRouteName='Pending'
@@ -34,7 +41,12 @@ const HomeScreen = () => {
                 headerShown: false,
             })}
         >
-            <Tab.Screen name='Create' component={CreateScreen} />
+            {console.log(user.type)}
+            {createUser ? (
+                <Tab.Screen name='Create' component={CreateScreen} />
+            ) : (
+                <></>
+            )}
             <Tab.Screen name='Pending' component={PendingScreen} />
             <Tab.Screen name='Accepted' component={AcceptedScreen} />
             <Tab.Screen name='Settings' component={SettingsScreen} />

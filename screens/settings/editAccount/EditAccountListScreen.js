@@ -1,23 +1,19 @@
 import { StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
 import { ListItem } from 'react-native-elements';
 import { db, auth } from '../../../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const EditAccountListScreen = () => {
+const EditAccountListScreen = ({ navigation }) => {
     const [firstName, setFirstName] = useState('');
     const [lastName1, setLastName1] = useState('');
     const [lastName2, setLastName2] = useState('');
     const [type, setType] = useState('');
     const [email, setEmail] = useState('');
 
-    const navigation = useNavigation();
-
     useEffect(async () => {
-        const user = auth.currentUser;
-        const userRef = doc(db, 'users', user.uid);
+        const userRef = doc(db, 'users', auth.currentUser.uid);
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) {
             const data = userSnap.data();
