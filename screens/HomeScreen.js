@@ -1,8 +1,7 @@
 import { StyleSheet } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { AuthContext } from '../auth/Auth';
-import { auth } from '../firebase';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CreateScreen from './donations/CreateDonationScreen';
 import PendingScreen from './donations/PendingScreen';
