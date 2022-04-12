@@ -12,11 +12,9 @@ import React, { useEffect, useState } from 'react';
 import { db } from '../../../firebase';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { Text, Card, SearchBar } from 'react-native-elements';
-import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const ListScreen = () => {
-    const navigation = useNavigation();
+const ListScreen = ({ navigation }) => {
     const [refreshing, setRefreshing] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
     const [acceptedDonations, setAcceptedDonations] = useState([]);
