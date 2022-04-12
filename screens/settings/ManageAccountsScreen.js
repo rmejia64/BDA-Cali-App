@@ -9,11 +9,9 @@ import {
 import { db, auth } from '../../firebase';
 import React, { useState, useEffect } from 'react';
 import { doc, getDocs, collection, query, orderBy } from 'firebase/firestore';
-import { useNavigation } from '@react-navigation/native';
 import { ListItem, Chip } from 'react-native-elements';
 
-const ManageAccountsScreen = () => {
-    const navigation = useNavigation();
+const ManageAccountsScreen = ({ navigation }) => {
     const [users, setUsers] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
