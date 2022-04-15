@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { ListItem } from 'react-native-elements';
-import { db, auth } from '../../../firebase';
+import { db, auth } from '../../../firebase/config';
 import { doc, getDoc } from 'firebase/firestore';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 

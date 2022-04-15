@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import React, { useEffect, useState } from 'react';
-import { db } from '../../../firebase';
+import { db } from '../../../firebase/config';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { Text, Card, SearchBar } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -45,7 +45,7 @@ const ListScreen = ({ navigation }) => {
             });
             setAcceptedDonations(forms);
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     };
 

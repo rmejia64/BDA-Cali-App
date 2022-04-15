@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import SettingsListScreen from './SettingsListScreen';
-import ManageAccountsScreen from './ManageAccountsScreen';
-import CreateAccountScreen from './CreateAccountScreen';
+import ManageAccountsScreen from './admin/ManageAccountsScreen';
+import CreateAccountScreen from './admin/CreateAccountScreen';
 import LanguageScreen from './LanguageScreen';
 import EditAccountListScreen from './editAccount/EditAccountListScreen';
 import ChangePasswordScreen from './editAccount/ChangePasswordScreen';

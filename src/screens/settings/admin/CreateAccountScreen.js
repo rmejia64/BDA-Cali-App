@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import React, { useState } from 'react';
-import { db, auth } from '../../firebase';
+import { db, auth } from '../../../firebase/config';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -187,13 +187,6 @@ const CreateAccountScreen = () => {
                         autoCapitalize='none'
                     />
                 </View>
-                <TouchableOpacity
-                    onPress={createAccount}
-                    style={styles.button}
-                    disabled={isLoading}
-                >
-                    <CreateButton />
-                </TouchableOpacity>
                 <View style={styles.passwordAdvisory}>
                     <Text style={styles.passwordAdvisoryText}>
                         A password will be automatically generated as the first
@@ -207,6 +200,13 @@ const CreateAccountScreen = () => {
                         Password: AdrRamiLope
                     </Text>
                 </View>
+                <TouchableOpacity
+                    onPress={createAccount}
+                    style={styles.button}
+                    disabled={isLoading}
+                >
+                    <CreateButton />
+                </TouchableOpacity>
             </View>
         </KeyboardAwareScrollView>
     );
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     },
     passwordAdvisory: {
         width: '80%',
-        paddingTop: 40,
+        paddingTop: 20,
     },
     passwordAdvisoryText: {
         textAlign: 'center',

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
-import { Auth } from './auth/Auth';
-import UserState from './auth/UserState';
+import { Auth } from './src/auth/Auth';
+import UserState from './src/auth/UserState';
 
 // Imports for notifications
 import * as Device from 'expo-device';

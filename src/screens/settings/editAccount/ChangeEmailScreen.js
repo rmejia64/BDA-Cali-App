@@ -11,7 +11,7 @@ import {
 import React, { useState } from 'react';
 import { getAuth, updateEmail } from 'firebase/auth';
 import { ref, set } from 'firebase/database';
-import { auth, db } from '../../../firebase';
+import { auth, db } from '../../../firebase/config';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const ChangeEmailScreen = ({ route, navigation }) => {

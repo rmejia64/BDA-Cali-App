@@ -16,7 +16,7 @@ import { set, useForm } from 'react-hook-form';
 import { collection, addDoc } from 'firebase/firestore';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Picker } from '@react-native-picker/picker';
-import { db } from '../../firebase';
+import { db } from '../../firebase/config';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const CreateDonationScreen = () => {
@@ -137,6 +137,7 @@ const CreateDonationScreen = () => {
                 notes,
                 quantity: parseInt(quantity),
                 weight: parseInt(weight),
+                driver: '',
             };
 
             await addDoc(collection(db, 'pendingDonations'), data);
