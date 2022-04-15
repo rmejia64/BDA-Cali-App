@@ -7,10 +7,11 @@ import {
     View,
     Image,
     Modal,
+    ActivityIndicator,
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { auth, db } from '../../firebase';
-import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+import React, { useState } from 'react';
+import { auth, db } from '../../firebase/config';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { doc, getDoc } from 'firebase/firestore';
 
@@ -19,15 +20,7 @@ const LoginScreen = ({ navigation }) => {
     const [password, setPassword] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
     const [modalText, setModalText] = useState('');
-
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
-                navigation.replace('HomeScreen');
-            }
-        });
-        return unsubscribe;
-    }, []);
+    const [loading, setLoading] = useState(false);
 
     const errorModal = (error) => {
         if (error === 'auth/wrong-password') {
@@ -50,23 +43,26 @@ const LoginScreen = ({ navigation }) => {
     };
 
     const handleSignIn = () => {
+        setLoading(true);
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 // perform sign-in operations
-                // console.log(`${userCredential.user.email} is signed in.`);
                 getDoc(doc(db, 'users', userCredential.user.uid))
                     .then((userSnap) => {
                         if (!userSnap.exists) {
                             alert('User does not exist anymore.');
                             return;
                         }
+                        setLoading(false);
                     })
                     .catch((error) => {
                         alert(error);
+                        setLoading(false);
                     });
             })
             .catch((error) => {
                 errorModal(error.code);
+                setLoading(false);
             });
     };
 
@@ -94,7 +90,7 @@ const LoginScreen = ({ navigation }) => {
             <View style={styles.logoContainer}>
                 <Image
                     style={styles.logo}
-                    source={require('../../assets/bdalogo.png')}
+                    source={require('../../../assets/bdalogo.png')}
                 />
             </View>
             <View style={styles.inputContainer}>
@@ -116,7 +112,11 @@ const LoginScreen = ({ navigation }) => {
                     secureTextEntry
                 />
                 <TouchableOpacity onPress={handleSignIn} style={styles.button}>
-                    <Text style={styles.buttonText}>Login</Text>
+                    {loading ? (
+                        <ActivityIndicator />
+                    ) : (
+                        <Text style={styles.buttonText}>Login</Text>
+                    )}
                 </TouchableOpacity>
             </View>
             <TouchableOpacity

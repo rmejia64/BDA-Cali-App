@@ -9,10 +9,9 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import React, { useEffect, useState } from 'react';
-import { db } from '../../../firebase';
+import { db } from '../../../firebase/config';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { Text, Chip, SearchBar, ListItem } from 'react-native-elements';
-import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const ListScreen = ({ navigation }) => {
@@ -47,7 +46,7 @@ const ListScreen = ({ navigation }) => {
             });
             setPendingDonations(forms);
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     };
 

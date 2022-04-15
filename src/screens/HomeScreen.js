@@ -7,6 +7,7 @@ import CreateScreen from './donations/CreateDonationScreen';
 import PendingScreen from './donations/PendingScreen';
 import AcceptedScreen from './donations/AcceptedScreen';
 import SettingsScreen from './settings/SettingsScreen';
+import PickupScreen from './donations/PickupScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -14,15 +15,15 @@ const HomeScreen = () => {
     let [user] = useState(AuthContext);
     user = user._currentValue.user;
 
-    const createUser = user.type === 'Administrator';
-
     return (
         <Tab.Navigator
             initialRouteName='Pending'
             screenOptions={({ route }) => ({
                 tabBarIcon: ({ focused, color, size }) => {
                     let iconName;
-                    if (route.name === 'Pending') {
+                    if (route.name === 'Pickup') {
+                        iconName = focused ? 'truck' : 'truck-outline';
+                    } else if (route.name === 'Pending') {
                         iconName = focused
                             ? 'account-clock'
                             : 'account-clock-outline';
@@ -40,14 +41,27 @@ const HomeScreen = () => {
                 headerShown: false,
             })}
         >
-            {console.log(user.type)}
-            {createUser ? (
+            {user.type === 'Administrator' ? (
                 <Tab.Screen name='Create' component={CreateScreen} />
             ) : (
                 <></>
             )}
-            <Tab.Screen name='Pending' component={PendingScreen} />
-            <Tab.Screen name='Accepted' component={AcceptedScreen} />
+            {user.type === 'Driver' ? (
+                <Tab.Screen name='Pickup' component={PickupScreen} />
+            ) : (
+                <></>
+            )}
+            {user.type === 'Driver' ? (
+                <></>
+            ) : (
+                <Tab.Screen name='Pending' component={PendingScreen} />
+            )}
+
+            {user.type === 'Driver' ? (
+                <></>
+            ) : (
+                <Tab.Screen name='Accepted' component={AcceptedScreen} />
+            )}
             <Tab.Screen name='Settings' component={SettingsScreen} />
         </Tab.Navigator>
     );

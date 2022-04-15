@@ -9,7 +9,7 @@ import {
     Alert,
 } from 'react-native';
 import React, { useState } from 'react';
-import { auth } from '../../firebase';
+import { auth } from '../../firebase/config';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 

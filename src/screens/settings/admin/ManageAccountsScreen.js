@@ -1,14 +1,7 @@
-import {
-    StyleSheet,
-    Text,
-    View,
-    ScrollView,
-    RefreshControl,
-    ActivityIndicator,
-} from 'react-native';
-import { db, auth } from '../../firebase';
+import { StyleSheet, View, ScrollView, RefreshControl } from 'react-native';
+import { db } from '../../../firebase/config';
 import React, { useState, useEffect } from 'react';
-import { doc, getDocs, collection, query, orderBy } from 'firebase/firestore';
+import { getDocs, collection, query, orderBy } from 'firebase/firestore';
 import { ListItem, Chip } from 'react-native-elements';
 
 const ManageAccountsScreen = ({ navigation }) => {
@@ -19,11 +12,9 @@ const ManageAccountsScreen = ({ navigation }) => {
     const getUsers = async () => {
         setRefreshing(true);
         let tempUsers = [];
-        let q;
 
         const users = collection(db, 'users');
-
-        q = query(users, orderBy('firstName'));
+        const q = query(users, orderBy('firstName'));
 
         try {
             const querySnapshot = await getDocs(q);
@@ -34,7 +25,6 @@ const ManageAccountsScreen = ({ navigation }) => {
             setUsers(tempUsers);
         } catch (error) {
             setRefreshing(false);
-            console.log(error);
         }
     };
 

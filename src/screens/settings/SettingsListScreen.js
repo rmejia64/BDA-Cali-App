@@ -1,17 +1,21 @@
 import { StyleSheet, View } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { auth } from '../../firebase';
+import { auth } from '../../firebase/config';
 import { signOut } from 'firebase/auth';
 import { ListItem } from 'react-native-elements';
+import { AuthContext } from '../../auth/Auth';
 
 const SettingsScreen = ({ navigation }) => {
+    let [user] = useState(AuthContext);
+    user = user._currentValue.user;
+
     const handleSignout = () => {
         signOut(auth)
             .then(() => {
-                navigation.replace('LoginHomeScreen');
+                // sign-out successful
             })
-            .catch((error) => console.log(error.message));
+            .catch((error) => console.error(error.message));
     };
 
     return (
@@ -28,30 +32,34 @@ const SettingsScreen = ({ navigation }) => {
                 </ListItem.Content>
                 <ListItem.Chevron />
             </ListItem>
-            <ListItem
-                onPress={() => {
-                    navigation.push('ManageAccounts');
-                }}
-                bottomDivider
-            >
-                <Icon name={'account-multiple'} size={20} />
-                <ListItem.Content>
-                    <ListItem.Title>Manage Accounts</ListItem.Title>
-                </ListItem.Content>
-                <ListItem.Chevron />
-            </ListItem>
-            <ListItem
-                onPress={() => {
-                    navigation.push('CreateAccount');
-                }}
-                bottomDivider
-            >
-                <Icon name={'account-plus'} size={20} />
-                <ListItem.Content>
-                    <ListItem.Title>Create Account</ListItem.Title>
-                </ListItem.Content>
-                <ListItem.Chevron />
-            </ListItem>
+            {user.type === 'Administrator' ? (
+                <ListItem
+                    onPress={() => {
+                        navigation.push('ManageAccounts');
+                    }}
+                    bottomDivider
+                >
+                    <Icon name={'account-multiple'} size={20} />
+                    <ListItem.Content>
+                        <ListItem.Title>Manage Accounts</ListItem.Title>
+                    </ListItem.Content>
+                    <ListItem.Chevron />
+                </ListItem>
+            ) : null}
+            {user.type === 'Administrator' ? (
+                <ListItem
+                    onPress={() => {
+                        navigation.push('CreateAccount');
+                    }}
+                    bottomDivider
+                >
+                    <Icon name={'account-plus'} size={20} />
+                    <ListItem.Content>
+                        <ListItem.Title>Create Account</ListItem.Title>
+                    </ListItem.Content>
+                    <ListItem.Chevron />
+                </ListItem>
+            ) : null}
             <ListItem
                 onPress={() => {
                     navigation.push('Language');
