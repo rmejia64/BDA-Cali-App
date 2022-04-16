@@ -41,23 +41,23 @@ const HomeScreen = () => {
                 headerShown: false,
             })}
         >
-            {user.type === 'Administrator' ? (
+            {user.data.type === 'Administrator' ? (
                 <Tab.Screen name='Create' component={CreateScreen} />
             ) : (
                 <></>
             )}
-            {user.type === 'Driver' ? (
+            {user.data.type === 'Driver' ? (
                 <Tab.Screen name='Pickup' component={PickupScreen} />
             ) : (
                 <></>
             )}
-            {user.type === 'Driver' ? (
+            {user.data.type === 'Driver' ? (
                 <></>
             ) : (
                 <Tab.Screen name='Pending' component={PendingScreen} />
             )}
 
-            {user.type === 'Driver' ? (
+            {user.data.type === 'Driver' ? (
                 <></>
             ) : (
                 <Tab.Screen name='Accepted' component={AcceptedScreen} />

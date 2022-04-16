@@ -121,6 +121,34 @@ const CreateDonationScreen = () => {
             setIndivLastNames('');
         }
 
+        if (notes.startsWith('generate')) {
+            const amount = notes.split(' ')[1];
+            for (let i = 0; i < amount; i++) {
+                let data = {
+                    dateCreated: new Date(),
+                    client: {
+                        type: i % 2 === 0 ? 'Organization' : 'Individual',
+                        organization: i % 2 === 0 ? 'Org ' + i : '',
+                        firstName: i % 2 !== 0 ? 'First' : '',
+                        lastNames: i % 2 !== 0 ? 'Last ' + i : '',
+                    },
+                    address: i + ' Test St., Santa Clara, CA',
+                    certificate: i % 3 === 0 ? false : true,
+                    productType: i % 2 === 0 ? 'Perishable' : 'Non-perishable',
+                    packaging: 'Boxes',
+                    notes: 'This is a sample donation',
+                    quantity: 20,
+                    weight: 40,
+                    driver: '',
+                    pickupDate: null,
+                };
+                await addDoc(collection(db, 'pendingDonations'), data);
+            }
+            handleClear();
+            setIsLoading(false);
+            return;
+        }
+
         if (inputsValid() === true) {
             let data = {
                 dateCreated: new Date(),
@@ -138,6 +166,7 @@ const CreateDonationScreen = () => {
                 quantity: parseInt(quantity),
                 weight: parseInt(weight),
                 driver: '',
+                pickupDate: null,
             };
 
             await addDoc(collection(db, 'pendingDonations'), data);
@@ -240,6 +269,7 @@ const CreateDonationScreen = () => {
                         value={address}
                         onChangeText={setAddress}
                         style={styles.input}
+                        selectTextOnFocus
                     />
 
                     <Text style={styles.infoHeader}>

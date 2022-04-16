@@ -32,7 +32,7 @@ const SettingsScreen = ({ navigation }) => {
                 </ListItem.Content>
                 <ListItem.Chevron />
             </ListItem>
-            {user.type === 'Administrator' ? (
+            {user.data.type === 'Administrator' ? (
                 <ListItem
                     onPress={() => {
                         navigation.push('ManageAccounts');
@@ -46,7 +46,7 @@ const SettingsScreen = ({ navigation }) => {
                     <ListItem.Chevron />
                 </ListItem>
             ) : null}
-            {user.type === 'Administrator' ? (
+            {user.data.type === 'Administrator' ? (
                 <ListItem
                     onPress={() => {
                         navigation.push('CreateAccount');

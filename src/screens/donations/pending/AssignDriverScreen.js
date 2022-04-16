@@ -123,6 +123,8 @@ const AssignDriverScreen = ({ route, navigation }) => {
                                     onPress={() => {
                                         handleAssignDriver(driver.uid, idx);
                                     }}
+                                    checkedIcon='dot-circle-o'
+                                    uncheckedIcon='circle-o'
                                 />
                             )}
                             <ListItem.Content>

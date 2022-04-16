@@ -10,8 +10,14 @@ import {
 import { Picker } from '@react-native-picker/picker';
 import React, { useEffect, useState } from 'react';
 import { db } from '../../../firebase/config';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
-import { Text, Chip, SearchBar, ListItem } from 'react-native-elements';
+import {
+    collection,
+    getDocs,
+    orderBy,
+    query,
+    setDoc,
+} from 'firebase/firestore';
+import { Text, Chip, SearchBar, ListItem, Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const ListScreen = ({ navigation }) => {
@@ -40,7 +46,6 @@ const ListScreen = ({ navigation }) => {
 
         try {
             const querySnapshot = await getDocs(q);
-            setRefreshing(false);
             querySnapshot.forEach((doc) => {
                 forms.push({ id: doc.id, data: doc.data() });
             });
@@ -48,6 +53,14 @@ const ListScreen = ({ navigation }) => {
         } catch (error) {
             console.error(error);
         }
+
+        setRefreshing(false);
+    };
+
+    const acceptDonation = async (pd) => {
+        await setDoc(doc(db, 'acceptedDonations', pd.id), pd.data);
+        await deleteDoc(doc(db, 'pendingDonations', pd.id));
+        setRefreshKey((oldKey) => oldKey + 1);
     };
 
     const getAge = (date) => {
@@ -122,8 +135,11 @@ const ListScreen = ({ navigation }) => {
             >
                 <View style={styles.donations}>
                     {pendingDonations.map((pd, idx) => {
+                        const ready =
+                            pd.data.driver !== '' &&
+                            pd.data.pickupDate !== null;
                         return (
-                            <ListItem.Swipeable
+                            <ListItem
                                 key={pd.id}
                                 onPress={() => {
                                     navigation.navigate('View', {
@@ -149,25 +165,61 @@ const ListScreen = ({ navigation }) => {
                                     </ListItem.Subtitle>
                                     <View style={styles.chips}>
                                         <Chip
+                                            title={
+                                                ready ? 'Ready' : 'Not ready'
+                                            }
+                                            buttonStyle={{
+                                                backgroundColor: ready
+                                                    ? '#91be62'
+                                                    : '#df0b37',
+                                            }}
+                                            icon={{
+                                                name: ready
+                                                    ? 'cancel'
+                                                    : 'check-bold',
+                                                type: 'material-community',
+                                                size: 15,
+                                                color: 'white',
+                                            }}
+                                            containerStyle={{ margin: 5 }}
+                                        />
+                                        <Chip
                                             title={getAge(
                                                 pd.data.dateCreated.toDate()
                                             )}
-                                            color={'black'}
-                                            containerStyle={{ marginRight: 5 }}
+                                            buttonStyle={{
+                                                backgroundColor: '#0b5575',
+                                            }}
+                                            icon={{
+                                                name: 'clock',
+                                                type: 'material-community',
+                                                size: 15,
+                                                color: 'white',
+                                            }}
+                                            containerStyle={{ margin: 5 }}
                                         />
                                         {pd.data.certificate ? (
                                             <Chip
                                                 title='Certificate'
                                                 disabled={!pd.data.certificate}
                                                 containerStyle={{
-                                                    marginRight: 5,
+                                                    margin: 5,
+                                                }}
+                                                buttonStyle={{
+                                                    backgroundColor: '#ffd200',
+                                                }}
+                                                icon={{
+                                                    name: 'certificate',
+                                                    type: 'material-community',
+                                                    size: 15,
+                                                    color: 'white',
                                                 }}
                                             />
                                         ) : null}
                                     </View>
                                 </ListItem.Content>
                                 <ListItem.Chevron />
-                            </ListItem.Swipeable>
+                            </ListItem>
                         );
                     })}
                 </View>
