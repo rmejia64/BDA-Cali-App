@@ -23,7 +23,10 @@ const UserState = () => {
                         .then((userSnap) => {
                             const userData = userSnap.data();
                             setLoading(false);
-                            setUser(userData);
+                            setUser({
+                                id: user.uid,
+                                data: userData,
+                            });
                             setLoggedIn(true);
                         })
                         .catch((error) => {
