@@ -14,13 +14,13 @@ const UserState = () => {
     const [loggedIn, setLoggedIn] = useState(null);
 
     useEffect(() => {
-        let isMounted = true;
+        let mounted = true;
 
-        onAuthStateChanged(auth, (user) => {
-            if (isMounted) {
-                if (user) {
-                    getDoc(doc(db, 'users', user.uid))
-                        .then((userSnap) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                getDoc(doc(db, 'users', user.uid))
+                    .then((userSnap) => {
+                        if (mounted) {
                             const userData = userSnap.data();
                             setLoading(false);
                             setUser({
@@ -28,20 +28,19 @@ const UserState = () => {
                                 data: userData,
                             });
                             setLoggedIn(true);
-                        })
-                        .catch((error) => {
-                            setLoading(false);
-                        });
-                } else {
-                    setLoading(false);
-                    setLoggedIn(false);
-                }
+                        }
+                    })
+                    .catch((error) => {
+                        setLoading(false);
+                    });
+            } else {
+                setLoading(false);
+                setLoggedIn(false);
             }
         });
-        return () => {
-            isMounted = false;
-        };
-    }, []);
+
+        return unsubscribe;
+    }, [auth]);
 
     if (loading) {
         return (

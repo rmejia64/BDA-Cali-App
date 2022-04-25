@@ -5,6 +5,7 @@ import {
     ScrollView,
     Platform,
     ActivityIndicator,
+    Modal,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { db } from '../../../firebase/config';
@@ -17,17 +18,18 @@ import {
     doc,
     updateDoc,
     getDoc,
+    deleteField,
 } from 'firebase/firestore';
 import { ListItem, SearchBar } from 'react-native-elements';
+import LoadingModal from '../../../../components/LoadingModal';
 
 const AssignDriverScreen = ({ route, navigation }) => {
-    const { donationID, driver } = route.params;
+    const { id, driver } = route.params;
     const [drivers, setDrivers] = useState([]);
     const [search, setSearch] = useState('');
     const [checkBox, setCheckBox] = useState([]);
     const [loading, setLoading] = useState('false');
     const [loadingDriver, setLoadingDriver] = useState([]);
-    const [currentDriver, setCurrentDriver] = useState('');
 
     const updateSearch = (search) => {
         setSearch(search);
@@ -39,11 +41,7 @@ const AssignDriverScreen = ({ route, navigation }) => {
         let tempLoadingDrivers = [];
 
         const users = collection(db, 'users');
-        const userQuery = query(
-            users,
-            where('type', '==', 'Driver'),
-            orderBy('lastName1')
-        );
+        const userQuery = query(users, where('type', '==', 'driver'));
 
         try {
             const querySnapshot = await getDocs(userQuery);
@@ -65,6 +63,7 @@ const AssignDriverScreen = ({ route, navigation }) => {
     };
 
     const handleAssignDriver = async (uid, idx) => {
+        setLoading(true);
         // handle checkbox selection (only one can be selected)
         const newCheckBoxes = Array(checkBox.length).fill(false);
         const newLoadingDrivers = Array(checkBox.length).fill(false);
@@ -72,22 +71,21 @@ const AssignDriverScreen = ({ route, navigation }) => {
         newLoadingDrivers[idx] = true;
         setLoadingDriver(newLoadingDrivers);
 
-        const donationRef = doc(db, 'pendingDonations', donationID);
+        const donationRef = doc(db, 'pending', id);
 
         if (!checkBox[idx]) {
             await updateDoc(donationRef, {
-                driver: uid,
+                'pickup.driver': uid,
             });
-            setCurrentDriver(uid);
         } else {
             await updateDoc(donationRef, {
-                driver: '',
+                'pickup.driver': deleteField(),
             });
-            setCurrentDriver('');
         }
 
         newLoadingDrivers[idx] = false;
         setLoadingDriver(newLoadingDrivers);
+        setLoading(false);
         setCheckBox(newCheckBoxes);
     };
 
@@ -101,8 +99,9 @@ const AssignDriverScreen = ({ route, navigation }) => {
 
     return (
         <View style={{ height: '100%' }}>
+            <LoadingModal visible={loading} />
             <SearchBar
-                placeholder='Look up name...'
+                placeholder='Buscar nombre...'
                 platform={Platform.OS}
                 value={search}
                 onChangeText={updateSearch}
@@ -115,24 +114,20 @@ const AssignDriverScreen = ({ route, navigation }) => {
                             bottomDivider
                             key={driver.uid}
                         >
-                            {loadingDriver[idx] ? (
-                                <ActivityIndicator />
-                            ) : (
-                                <ListItem.CheckBox
-                                    checked={checkBox[idx]}
-                                    onPress={() => {
-                                        handleAssignDriver(driver.uid, idx);
-                                    }}
-                                    checkedIcon='dot-circle-o'
-                                    uncheckedIcon='circle-o'
-                                />
-                            )}
+                            <ListItem.CheckBox
+                                checked={checkBox[idx]}
+                                onPress={() => {
+                                    handleAssignDriver(driver.uid, idx);
+                                }}
+                                checkedIcon='dot-circle-o'
+                                uncheckedIcon='circle-o'
+                            />
                             <ListItem.Content>
                                 <ListItem.Title>
-                                    {driver.data.firstName}{' '}
-                                    {driver.data.lastName1}{' '}
-                                    {driver.data.lastName2 !== ''
-                                        ? driver.data.lastName2
+                                    {driver.data.name.first}{' '}
+                                    {driver.data.name.last1}{' '}
+                                    {driver.data.name.last2 !== ''
+                                        ? driver.data.name.last2
                                         : ''}
                                 </ListItem.Title>
                             </ListItem.Content>
@@ -146,4 +141,25 @@ const AssignDriverScreen = ({ route, navigation }) => {
 
 export default AssignDriverScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalView: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: 50,
+        height: 50,
+        backgroundColor: 'grey',
+        borderRadius: 10,
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+});

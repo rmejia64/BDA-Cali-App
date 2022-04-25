@@ -22,8 +22,14 @@ const CreateAccountScreen = () => {
     const [firstName, setFirstName] = useState('');
     const [lastName1, setLastName1] = useState('');
     const [lastName2, setLastName2] = useState('');
-    const [accountType, setAccountType] = useState('Driver');
+    const [accountType, setAccountType] = useState('driver');
     const [isLoading, setIsLoading] = useState(false);
+
+    const types = {
+        admin: 'Administrador',
+        warehouse: 'Depósito',
+        driver: 'Conductor',
+    };
 
     const generatePassword = () => {
         let p = firstName.substring(0, 3);
@@ -53,9 +59,11 @@ const CreateAccountScreen = () => {
                     const user = userCredential.user;
                     await setDoc(doc(db, 'users', user.uid), {
                         email: user.email,
-                        firstName,
-                        lastName1,
-                        lastName2,
+                        name: {
+                            first: firstName,
+                            last1: lastName1,
+                            last2: lastName2 === '' ? null : lastName2,
+                        },
                         type: accountType,
                     });
                     setIsLoading(false);
@@ -93,14 +101,20 @@ const CreateAccountScreen = () => {
         if (isLoading) {
             return <ActivityIndicator />;
         } else {
-            return <Text style={styles.buttonText}>Create Account</Text>;
+            return <Text style={styles.buttonText}>Crear</Text>;
         }
     }
 
     function Dropdown() {
         const platform = Platform.OS;
+
         if (platform === 'ios') {
-            const buttons = ['Cancel', 'Administrator', 'Warehouse', 'Driver'];
+            const buttons = [
+                'Cancelar',
+                'Administrador',
+                'Depósito',
+                'Conductor',
+            ];
             return (
                 <TouchableOpacity
                     style={styles.actionSheetButton}
@@ -109,13 +123,13 @@ const CreateAccountScreen = () => {
                             { options: buttons, cancelButtonIndex: 0 },
                             (buttonIndex) => {
                                 if (buttonIndex !== 0) {
-                                    setAccountType(buttons[buttonIndex]);
+                                    setAccountType(types[buttons[buttonIndex]]);
                                 }
                             }
                         );
                     }}
                 >
-                    <Text>{accountType}</Text>
+                    <Text>{types[accountType]}</Text>
                     <Icon name='menu-down' size={20} />
                 </TouchableOpacity>
             );
@@ -127,7 +141,7 @@ const CreateAccountScreen = () => {
         <KeyboardAwareScrollView>
             <View style={styles.container} behavior='padding'>
                 <View style={styles.section}>
-                    <Text style={styles.heading}>Account Type</Text>
+                    <Text style={styles.heading}>Tipo de Cuenta</Text>
                     <Dropdown />
                     {/* Picker is here because Android was glitchy when conditionally
                         rendering Picker in Dropdown(), so if platform is Android, we
@@ -139,18 +153,15 @@ const CreateAccountScreen = () => {
                         }}
                         style={Platform.OS === 'ios' ? { display: 'none' } : {}}
                     >
-                        <Picker.Item
-                            label='Administrator'
-                            value='Administrator'
-                        />
-                        <Picker.Item label='Warehouse' value='Warehouse' />
-                        <Picker.Item label='Driver' value='Driver' />
+                        <Picker.Item label='Administrador' value='admin' />
+                        <Picker.Item label='Depósito' value='warehouse' />
+                        <Picker.Item label='Conductor' value='driver' />
                     </Picker>
                 </View>
                 <View style={styles.section}>
                     <Text style={styles.heading}>Name</Text>
                     <Text>
-                        First Name <Text style={{ color: 'red' }}>*</Text>
+                        Primer nombre <Text style={{ color: 'red' }}>*</Text>
                     </Text>
                     <TextInput
                         placeholder='Adrian'
@@ -159,7 +170,7 @@ const CreateAccountScreen = () => {
                         style={styles.input}
                     />
                     <Text>
-                        Last Name 1 <Text style={{ color: 'red' }}>*</Text>
+                        Primer apellido <Text style={{ color: 'red' }}>*</Text>
                     </Text>
                     <TextInput
                         placeholder='Ramirez'
@@ -167,7 +178,7 @@ const CreateAccountScreen = () => {
                         onChangeText={setLastName1}
                         style={styles.input}
                     />
-                    <Text>Last Name 2</Text>
+                    <Text>Segundo apellido</Text>
                     <TextInput
                         placeholder='Lopez'
                         value={lastName2}
@@ -189,15 +200,15 @@ const CreateAccountScreen = () => {
                 </View>
                 <View style={styles.passwordAdvisory}>
                     <Text style={styles.passwordAdvisoryText}>
-                        A password will be automatically generated as the first
-                        three letters of the first name and first four letters
-                        of the last names.
+                        Se genera automáticamente una contraseña con las
+                        primeras tres letras del nombre y las primeras cuatro
+                        letras de los apellidos.
                         {'\n\n'}
-                        Example:
+                        Ejemplo:
                         {'\n\n'}
-                        Name: Adrian Ramirez Lopez
+                        Nombre: Adrian Ramirez Lopez
                         {'\n'}
-                        Password: AdrRamiLope
+                        Contraseña: AdrRamiLope
                     </Text>
                 </View>
                 <TouchableOpacity

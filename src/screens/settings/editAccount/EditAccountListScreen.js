@@ -12,15 +12,21 @@ const EditAccountListScreen = ({ navigation }) => {
     const [type, setType] = useState('');
     const [email, setEmail] = useState('');
 
+    const types = {
+        admin: 'Administrador',
+        warehouse: 'Depósito',
+        driver: 'Conductor',
+    };
+
     useEffect(async () => {
         const userRef = doc(db, 'users', auth.currentUser.uid);
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) {
             const data = userSnap.data();
-            setFirstName(data.firstName);
-            setLastName1(data.lastName1);
-            setLastName2(data.lastName2);
-            setType(data.type);
+            setFirstName(data.name.first);
+            setLastName1(data.name.last1);
+            setLastName2(data.name.last2 === null ? '' : data.name.last2);
+            setType(types[data.type]);
             setEmail(data.email);
         } else {
             console.error('User not found.');
@@ -31,7 +37,7 @@ const EditAccountListScreen = ({ navigation }) => {
         <View>
             <ListItem bottomDivider>
                 <ListItem.Content>
-                    <ListItem.Title>Name</ListItem.Title>
+                    <ListItem.Title>Nombre</ListItem.Title>
                     <ListItem.Subtitle right>
                         {firstName +
                             ' ' +
@@ -42,7 +48,7 @@ const EditAccountListScreen = ({ navigation }) => {
             </ListItem>
             <ListItem bottomDivider>
                 <ListItem.Content>
-                    <ListItem.Title>Role</ListItem.Title>
+                    <ListItem.Title>Tipo de Cuenta</ListItem.Title>
                     <ListItem.Subtitle right>{type}</ListItem.Subtitle>
                 </ListItem.Content>
             </ListItem>
@@ -65,7 +71,7 @@ const EditAccountListScreen = ({ navigation }) => {
                 bottomDivider
             >
                 <ListItem.Content>
-                    <ListItem.Title>Change password</ListItem.Title>
+                    <ListItem.Title>Cambia la contraseña</ListItem.Title>
                 </ListItem.Content>
                 <ListItem.Chevron />
             </ListItem>

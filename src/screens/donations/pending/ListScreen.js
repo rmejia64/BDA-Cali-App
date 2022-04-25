@@ -1,66 +1,74 @@
 import {
     StyleSheet,
-    TouchableOpacity,
     View,
     ScrollView,
     RefreshControl,
-    Platform,
-    ActionSheetIOS,
+    Modal,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import React, { useEffect, useState } from 'react';
 import { db } from '../../../firebase/config';
-import {
-    collection,
-    getDocs,
-    orderBy,
-    query,
-    setDoc,
-} from 'firebase/firestore';
-import { Text, Chip, SearchBar, ListItem, Button } from 'react-native-elements';
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { Text, Chip, ListItem, Button, CheckBox } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const ListScreen = ({ navigation }) => {
     const [refreshing, setRefreshing] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
-    const [pendingDonations, setPendingDonations] = useState([]);
-    const [filter, setFilter] = useState('Newest');
+    const [donations, setDonations] = useState([]);
+    const [dateFilter, setDateFilter] = useState('newest');
+    const [tempDateFilter, setTempDateFilter] = useState('newest');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [tempStatusFilter, setTempStatusFilter] = useState('all');
+    const [filterModalVisible, setFilterModalVisible] = useState(false);
+    const [filters, setFilters] = useState(['newest', 'all']);
+
+    const filterTranslations = {
+        all: 'Todos',
+        ready: 'Listos',
+        notready: 'No Listos',
+        newest: 'Más nuevo',
+        oldest: 'Más viejo',
+    };
 
     // grab all documents in donationForms collection from firebase
     const getPendingDonations = async () => {
-        setRefreshing(true);
         let forms = [];
         let q;
-        const pendingDonations = collection(db, 'pendingDonations');
+        const donations = collection(db, 'pending');
 
-        // if (filter === 'Newest') {
-        //     q = query(pendingDonations, orderBy('dateCreated', 'desc'));
-        // } else if (filter === 'Oldest') {
-        //     q = query(pendingDonations, orderBy('dateCreated'));
-        // } else if (filter === 'Name') {
-        //     q = query(pendingDonations, orderBy('name'));
-        // } else if (filter === 'Type') {
-        //     q = query(pendingDonations, orderBy('donation'), orderBy('type'));
-        // }
-        q = query(pendingDonations, orderBy('dateCreated', 'desc'));
+        if (dateFilter === 'newest') {
+            q = query(donations, orderBy('dateCreated', 'desc'));
+        } else if (dateFilter === 'oldest') {
+            q = query(donations, orderBy('dateCreated', 'asc'));
+        }
 
         try {
             const querySnapshot = await getDocs(q);
             querySnapshot.forEach((doc) => {
-                forms.push({ id: doc.id, data: doc.data() });
+                const data = doc.data();
+                const ready =
+                    data.pickup === undefined
+                        ? false
+                        : !(
+                              data.pickup.driver === undefined ||
+                              data.pickup.date === undefined
+                          );
+                if (statusFilter === 'all') {
+                    forms.push({ id: doc.id, data: data });
+                } else if (statusFilter === 'ready') {
+                    if (ready) {
+                        forms.push({ id: doc.id, data: data });
+                    }
+                } else if (statusFilter === 'notready') {
+                    if (!ready) {
+                        forms.push({ id: doc.id, data: data });
+                    }
+                }
             });
-            setPendingDonations(forms);
+            setDonations(forms);
         } catch (error) {
             console.error(error);
         }
-
-        setRefreshing(false);
-    };
-
-    const acceptDonation = async (pd) => {
-        await setDoc(doc(db, 'acceptedDonations', pd.id), pd.data);
-        await deleteDoc(doc(db, 'pendingDonations', pd.id));
-        setRefreshKey((oldKey) => oldKey + 1);
     };
 
     const getAge = (date) => {
@@ -69,62 +77,215 @@ const ListScreen = ({ navigation }) => {
         return result < 1 ? 'New' : result.toFixed(0) + ' days old';
     };
 
-    function Dropdown() {
-        const platform = Platform.OS;
-        if (platform === 'ios') {
-            const buttons = ['Cancel', 'Newest', 'Oldest', 'Name', 'Type'];
-            return (
-                <TouchableOpacity
-                    style={styles.actionSheetButton}
-                    onPress={() => {
-                        ActionSheetIOS.showActionSheetWithOptions(
-                            { options: buttons, cancelButtonIndex: 0 },
-                            (buttonIndex) => {
-                                if (buttonIndex !== 0) {
-                                    setFilter(buttons[buttonIndex]);
-                                    setRefreshKey((oldKey) => oldKey + 1);
-                                }
-                            }
-                        );
-                    }}
-                >
-                    <Text>{filter}</Text>
-                    <Icon name='menu-down' size={20} />
-                </TouchableOpacity>
-            );
-        } else {
-            return (
-                <Picker
-                    selectedValue={filter}
-                    onValueChange={(itemValue, itemIndex) => {
-                        setFilter(itemValue);
-                        setRefreshKey((oldKey) => oldKey + 1);
-                    }}
-                >
-                    <Picker.Item label='Newest' value='Newest' />
-                    <Picker.Item label='Oldest' value='Oldest' />
-                    <Picker.Item label='Name' value='Name' />
-                    <Picker.Item label='Type' value='Type' />
-                </Picker>
-            );
-        }
-    }
+    // function Dropdown() {
+    //     const platform = Platform.OS;
+    //     if (platform === 'ios') {
+    //         const buttons = ['Cancel', 'Newest', 'Oldest', 'Ready'];
+    //         return (
+    //             <TouchableOpacity
+    //                 style={styles.actionSheetButton}
+    //                 onPress={() => {
+    //                     ActionSheetIOS.showActionSheetWithOptions(
+    //                         { options: buttons, cancelButtonIndex: 0 },
+    //                         (buttonIndex) => {
+    //                             if (buttonIndex !== 0) {
+    //                                 setFilter(buttons[buttonIndex]);
+    //                                 setRefreshKey((oldKey) => oldKey + 1);
+    //                             }
+    //                         }
+    //                     );
+    //                 }}
+    //             >
+    //                 <Text>{filter}</Text>
+    //                 <Icon name='menu-down' size={20} />
+    //             </TouchableOpacity>
+    //         );
+    //     } else {
+    //         return (
+    //             <Picker
+    //                 selectedValue={filter}
+    //                 onValueChange={(itemValue, itemIndex) => {
+    //                     setFilter(itemValue);
+    //                     setRefreshKey((oldKey) => oldKey + 1);
+    //                 }}
+    //             >
+    //                 <Picker.Item label='Newest' value='Newest' />
+    //                 <Picker.Item label='Oldest' value='Oldest' />
+    //             </Picker>
+    //         );
+    //     }
+    // }
 
     useEffect(() => {
         // refresh will trigger when the list screen is focused
         navigation.addListener('focus', () => {
-            setRefreshKey((oldKey) => oldKey + 1);
+            getPendingDonations();
         });
     });
 
     useEffect(() => {
+        setRefreshing(true);
         getPendingDonations();
+        setRefreshing(false);
     }, [refreshKey]);
 
     return (
         <>
-            {/* <SearchBar lightTheme /> */}
-            <Dropdown />
+            <Modal
+                visible={filterModalVisible}
+                animationType='fade'
+                transparent
+            >
+                <View style={styles.filterContainer}>
+                    <View style={styles.filterBox}>
+                        <View style={{ alignItems: 'flex-end' }}>
+                            <Icon
+                                name='close'
+                                color='#626b79'
+                                size={20}
+                                onPress={() => {
+                                    setTempDateFilter(dateFilter);
+                                    setTempStatusFilter(statusFilter);
+                                    setFilterModalVisible(false);
+                                }}
+                            />
+                        </View>
+                        <View>
+                            <Text style={styles.filterHeading}>
+                                Fecha de realización
+                            </Text>
+                            <CheckBox
+                                title='Más nuevo'
+                                checked={tempDateFilter === 'newest'}
+                                iconType='material-community'
+                                checkedIcon='radiobox-marked'
+                                uncheckedIcon='radiobox-blank'
+                                checkedColor='#0074cb'
+                                onPress={() => setTempDateFilter('newest')}
+                            />
+                            <CheckBox
+                                title='Más viejo'
+                                checked={tempDateFilter === 'oldest'}
+                                iconType='material-community'
+                                checkedIcon='radiobox-marked'
+                                uncheckedIcon='radiobox-blank'
+                                checkedColor='#0074cb'
+                                onPress={() => setTempDateFilter('oldest')}
+                            />
+                        </View>
+                        <View
+                            style={{
+                                borderBottomColor: 'rgba(0, 0, 0, 0.15)',
+                                borderBottomWidth: 1,
+                                marginVertical: 20,
+                            }}
+                        />
+                        <View>
+                            <Text style={styles.filterHeading}>Estado</Text>
+                            <CheckBox
+                                title='Listo'
+                                checked={tempStatusFilter === 'ready'}
+                                iconType='material-community'
+                                checkedIcon='radiobox-marked'
+                                uncheckedIcon='radiobox-blank'
+                                checkedColor='#0074cb'
+                                onPress={() => setTempStatusFilter('ready')}
+                            />
+                            <CheckBox
+                                title='No Listo'
+                                checked={tempStatusFilter === 'notready'}
+                                iconType='material-community'
+                                checkedIcon='radiobox-marked'
+                                uncheckedIcon='radiobox-blank'
+                                checkedColor='#0074cb'
+                                onPress={() => setTempStatusFilter('notready')}
+                            />
+                            <CheckBox
+                                title='Todos'
+                                checked={tempStatusFilter === 'all'}
+                                iconType='material-community'
+                                checkedIcon='radiobox-marked'
+                                uncheckedIcon='radiobox-blank'
+                                checkedColor='#0074cb'
+                                onPress={() => setTempStatusFilter('all')}
+                            />
+                        </View>
+                        <View
+                            style={{
+                                borderBottomColor: 'rgba(0, 0, 0, 0.15)',
+                                borderBottomWidth: 1,
+                                marginVertical: 20,
+                            }}
+                        />
+                        <View
+                            style={{
+                                alignItems: 'center',
+                                marginBottom: 20,
+                            }}
+                        >
+                            <Button
+                                title='Filtrar'
+                                onPress={() => {
+                                    setStatusFilter(tempStatusFilter);
+                                    setDateFilter(tempDateFilter);
+                                    setFilterModalVisible(false);
+                                    setRefreshKey((oldKey) => oldKey + 1);
+                                }}
+                                containerStyle={{ width: '92%' }}
+                            />
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+            <View
+                style={{
+                    backgroundColor: 'white',
+                    height: '8%',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    paddingRight: 10,
+                }}
+            >
+                <View style={{ flexDirection: 'row' }}>
+                    <Chip
+                        title={filterTranslations[dateFilter]}
+                        icon={{
+                            name: 'calendar',
+                            type: 'material-community',
+                            size: 20,
+                            color: 'white',
+                        }}
+                        containerStyle={{
+                            paddingLeft: 10,
+                        }}
+                        buttonStyle={{
+                            backgroundColor: '#9fabbb',
+                        }}
+                    />
+                    <Chip
+                        title={filterTranslations[statusFilter]}
+                        icon={{
+                            name: 'view-list',
+                            type: 'material-community',
+                            size: 20,
+                            color: 'white',
+                        }}
+                        containerStyle={{
+                            paddingLeft: 10,
+                        }}
+                        buttonStyle={{
+                            backgroundColor: '#9fabbb',
+                        }}
+                    />
+                </View>
+                <Icon
+                    name='filter-variant'
+                    color='#0074cb'
+                    size={25}
+                    onPress={() => setFilterModalVisible(true)}
+                />
+            </View>
             <ScrollView
                 refreshControl={
                     <RefreshControl
@@ -133,90 +294,71 @@ const ListScreen = ({ navigation }) => {
                     />
                 }
             >
+                {donations.length === 0 && (
+                    <View style={styles.noDonations}>
+                        <Text
+                            style={{
+                                fontWeight: '400',
+                                fontSize: 24,
+                                color: '#626b79',
+                            }}
+                        >
+                            Sin nuevas donaciones.
+                        </Text>
+                    </View>
+                )}
                 <View style={styles.donations}>
-                    {pendingDonations.map((pd, idx) => {
+                    {donations.map((pd, idx) => {
+                        const data = pd.data;
+                        const id = pd.id;
                         const ready =
-                            pd.data.driver !== '' &&
-                            pd.data.pickupDate !== null;
+                            data.pickup === undefined
+                                ? false
+                                : !(
+                                      data.pickup.driver === undefined ||
+                                      data.pickup.date === undefined
+                                  );
                         return (
                             <ListItem
-                                key={pd.id}
+                                key={id}
                                 onPress={() => {
-                                    navigation.navigate('View', {
-                                        id: pd.id,
-                                        data: pd.data,
+                                    navigation.push('View', {
+                                        id: id,
+                                        data: data,
                                     });
                                 }}
                                 topDivider={idx === 0}
                                 bottomDivider
                             >
+                                {ready ? (
+                                    <Icon
+                                        name='check-circle'
+                                        size={30}
+                                        color='green'
+                                    />
+                                ) : (
+                                    <Icon
+                                        name='clock'
+                                        size={30}
+                                        color='#dbdbdb'
+                                    />
+                                )}
                                 <ListItem.Content>
                                     <ListItem.Title>
-                                        {pd.data.client.organization !== ''
-                                            ? pd.data.client.organization
-                                            : pd.data.client.firstName +
+                                        {data.org !== undefined
+                                            ? data.org.name
+                                            : data.indiv.name.first +
                                               ' ' +
-                                              pd.data.client.lastNames}
+                                              data.indiv.name.last1 +
+                                              (data.indiv.name.last2 === null
+                                                  ? ''
+                                                  : ` ${data.indiv.name.last2}`)}
                                     </ListItem.Title>
                                     <ListItem.Subtitle>
-                                        {pd.data.dateCreated
+                                        {data.dateCreated
                                             .toDate()
                                             .toLocaleDateString('es-CO')}
                                     </ListItem.Subtitle>
-                                    <View style={styles.chips}>
-                                        <Chip
-                                            title={
-                                                ready ? 'Ready' : 'Not ready'
-                                            }
-                                            buttonStyle={{
-                                                backgroundColor: ready
-                                                    ? '#91be62'
-                                                    : '#df0b37',
-                                            }}
-                                            icon={{
-                                                name: ready
-                                                    ? 'cancel'
-                                                    : 'check-bold',
-                                                type: 'material-community',
-                                                size: 15,
-                                                color: 'white',
-                                            }}
-                                            containerStyle={{ margin: 5 }}
-                                        />
-                                        <Chip
-                                            title={getAge(
-                                                pd.data.dateCreated.toDate()
-                                            )}
-                                            buttonStyle={{
-                                                backgroundColor: '#0b5575',
-                                            }}
-                                            icon={{
-                                                name: 'clock',
-                                                type: 'material-community',
-                                                size: 15,
-                                                color: 'white',
-                                            }}
-                                            containerStyle={{ margin: 5 }}
-                                        />
-                                        {pd.data.certificate ? (
-                                            <Chip
-                                                title='Certificate'
-                                                disabled={!pd.data.certificate}
-                                                containerStyle={{
-                                                    margin: 5,
-                                                }}
-                                                buttonStyle={{
-                                                    backgroundColor: '#ffd200',
-                                                }}
-                                                icon={{
-                                                    name: 'certificate',
-                                                    type: 'material-community',
-                                                    size: 15,
-                                                    color: 'white',
-                                                }}
-                                            />
-                                        ) : null}
-                                    </View>
                                 </ListItem.Content>
                                 <ListItem.Chevron />
                             </ListItem>
@@ -233,9 +375,33 @@ export default ListScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        // alignItems: 'center',
         paddingBottom: 10,
         marginTop: 20,
+    },
+    filterContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(52, 52, 52, 0.8)',
+    },
+    filterBox: {
+        justifyContent: 'center',
+        padding: 20,
+        width: '80%',
+        backgroundColor: 'white',
+        borderRadius: 10,
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    filterHeading: {
+        marginLeft: 10,
+        marginBottom: 5,
+        fontSize: 18,
     },
     cardText: {
         flex: 1,
@@ -244,6 +410,11 @@ const styles = StyleSheet.create({
     },
     donations: {
         width: '100%',
+    },
+    noDonations: {
+        height: 200,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     actionSheetButton: {
         flexDirection: 'row',

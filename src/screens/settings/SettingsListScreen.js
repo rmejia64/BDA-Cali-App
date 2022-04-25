@@ -28,11 +28,11 @@ const SettingsScreen = ({ navigation }) => {
             >
                 <Icon name={'account-edit'} size={20} />
                 <ListItem.Content>
-                    <ListItem.Title>My Account</ListItem.Title>
+                    <ListItem.Title>Mi Cuenta</ListItem.Title>
                 </ListItem.Content>
                 <ListItem.Chevron />
             </ListItem>
-            {user.data.type === 'Administrator' ? (
+            {user.data.type === 'admin' ? (
                 <ListItem
                     onPress={() => {
                         navigation.push('ManageAccounts');
@@ -41,12 +41,14 @@ const SettingsScreen = ({ navigation }) => {
                 >
                     <Icon name={'account-multiple'} size={20} />
                     <ListItem.Content>
-                        <ListItem.Title>Manage Accounts</ListItem.Title>
+                        <ListItem.Title>
+                            Cuentas de Administración
+                        </ListItem.Title>
                     </ListItem.Content>
                     <ListItem.Chevron />
                 </ListItem>
             ) : null}
-            {user.data.type === 'Administrator' ? (
+            {user.data.type === 'admin' ? (
                 <ListItem
                     onPress={() => {
                         navigation.push('CreateAccount');
@@ -55,7 +57,7 @@ const SettingsScreen = ({ navigation }) => {
                 >
                     <Icon name={'account-plus'} size={20} />
                     <ListItem.Content>
-                        <ListItem.Title>Create Account</ListItem.Title>
+                        <ListItem.Title>Crear una Cuenta</ListItem.Title>
                     </ListItem.Content>
                     <ListItem.Chevron />
                 </ListItem>
@@ -68,7 +70,7 @@ const SettingsScreen = ({ navigation }) => {
             >
                 <Icon name={'translate'} size={20} />
                 <ListItem.Content>
-                    <ListItem.Title>Language</ListItem.Title>
+                    <ListItem.Title>Idioma</ListItem.Title>
                 </ListItem.Content>
                 <ListItem.Chevron />
             </ListItem>
@@ -76,7 +78,7 @@ const SettingsScreen = ({ navigation }) => {
                 <Icon name={'logout'} size={20} color={'red'} />
                 <ListItem.Content>
                     <ListItem.Title style={{ color: 'red' }}>
-                        Log out
+                        Cerrar Sesión
                     </ListItem.Title>
                 </ListItem.Content>
             </ListItem>

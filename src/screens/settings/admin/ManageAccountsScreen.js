@@ -3,52 +3,55 @@ import { db } from '../../../firebase/config';
 import React, { useState, useEffect } from 'react';
 import { getDocs, collection, query, orderBy } from 'firebase/firestore';
 import { ListItem, Chip } from 'react-native-elements';
+import LoadingModal from '../../../../components/LoadingModal';
 
 const ManageAccountsScreen = ({ navigation }) => {
     const [users, setUsers] = useState([]);
-    const [refreshing, setRefreshing] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
 
+    const types = {
+        admin: 'Administrador',
+        warehouse: 'Depósito',
+        driver: 'Conductor',
+    };
+
     const getUsers = async () => {
-        setRefreshing(true);
         let tempUsers = [];
 
         const users = collection(db, 'users');
-        const q = query(users, orderBy('firstName'));
+        const q = query(users, orderBy('name.first'));
 
         try {
             const querySnapshot = await getDocs(q);
-            setRefreshing(false);
             querySnapshot.forEach((doc) => {
                 tempUsers.push({ uid: doc.id, data: doc.data() });
             });
             setUsers(tempUsers);
         } catch (error) {
-            setRefreshing(false);
+            console.error(error);
         }
     };
 
     useEffect(() => {
         navigation.addListener('focus', () => {
-            setRefreshKey((oldKey) => oldKey + 1);
+            setLoading(true);
+            getUsers();
+            setLoading(false);
         });
     });
 
     useEffect(() => {
+        setLoading(true);
         getUsers();
-    }, [refreshKey]);
+        setLoading(false);
+    }, []);
 
     return (
         <>
             {/* <Filter /> */}
-            <ScrollView
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={getUsers}
-                    />
-                }
-            >
+            <LoadingModal visible={loading} />
+            <ScrollView>
                 <View>
                     {users.map((u, i) => {
                         return (
@@ -60,12 +63,15 @@ const ManageAccountsScreen = ({ navigation }) => {
                             >
                                 <ListItem.Content>
                                     <ListItem.Title>
-                                        {u.data.firstName} {u.data.lastName1}
-                                        {u.data.lastName2 !== ''
-                                            ? ' ' + u.data.lastName2
+                                        {u.data.name.first} {u.data.name.last1}
+                                        {u.data.name.last2 !== null
+                                            ? ' ' + u.data.name.last2
                                             : ''}
                                     </ListItem.Title>
-                                    <Chip title={u.data.type} />
+                                    <Chip
+                                        containerStyle={{ marginTop: 12 }}
+                                        title={types[u.data.type]}
+                                    />
                                 </ListItem.Content>
                             </ListItem>
                         );

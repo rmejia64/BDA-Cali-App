@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Platform } from 'react-native';
+import { Platform, LogBox } from 'react-native';
 import { Auth } from './src/auth/Auth';
 import UserState from './src/auth/UserState';
 
 // Imports for notifications
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+
+LogBox.ignoreLogs([`Setting a timer for a long period`]);
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({

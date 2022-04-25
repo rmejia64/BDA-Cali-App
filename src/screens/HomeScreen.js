@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { AuthContext } from '../auth/Auth';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import CreateScreen from './donations/CreateDonationScreen';
 import PendingScreen from './donations/PendingScreen';
 import AcceptedScreen from './donations/AcceptedScreen';
 import SettingsScreen from './settings/SettingsScreen';
 import PickupScreen from './donations/PickupScreen';
+import PickedupScreen from './donations/PickedupScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -17,52 +17,42 @@ const HomeScreen = () => {
 
     return (
         <Tab.Navigator
-            initialRouteName='Pending'
+            initialRouteName={
+                user.data.type === 'driver' ? 'Recoger' : 'Pendiente'
+            }
             screenOptions={({ route }) => ({
                 tabBarIcon: ({ focused, color, size }) => {
                     let iconName;
-                    if (route.name === 'Pickup') {
+                    if (route.name === 'Recoger') {
                         iconName = focused ? 'truck' : 'truck-outline';
-                    } else if (route.name === 'Pending') {
+                    } else if (route.name === 'Pendiente') {
                         iconName = focused
                             ? 'account-clock'
                             : 'account-clock-outline';
-                    } else if (route.name === 'Accepted') {
+                    } else if (route.name === 'Recogiendo') {
+                        iconName = focused ? 'truck' : 'truck-outline';
+                    } else if (route.name === 'Recogido') {
                         iconName = focused
-                            ? 'account-check'
-                            : 'account-check-outline';
-                    } else if (route.name === 'Settings') {
+                            ? 'truck-check'
+                            : 'truck-check-outline';
+                    } else if (route.name === 'Ajustes') {
                         iconName = focused ? 'cog' : 'cog-outline';
-                    } else if (route.name === 'Create') {
-                        iconName = focused ? 'pencil' : 'pencil-outline';
                     }
                     return <Icon name={iconName} size={size} color={color} />;
                 },
                 headerShown: false,
             })}
         >
-            {user.data.type === 'Administrator' ? (
-                <Tab.Screen name='Create' component={CreateScreen} />
+            {user.data.type === 'driver' ? (
+                <Tab.Screen name='Recoger' component={PickupScreen} />
             ) : (
-                <></>
+                <>
+                    <Tab.Screen name='Pendiente' component={PendingScreen} />
+                    <Tab.Screen name='Recogiendo' component={AcceptedScreen} />
+                    <Tab.Screen name='Recogido' component={PickedupScreen} />
+                </>
             )}
-            {user.data.type === 'Driver' ? (
-                <Tab.Screen name='Pickup' component={PickupScreen} />
-            ) : (
-                <></>
-            )}
-            {user.data.type === 'Driver' ? (
-                <></>
-            ) : (
-                <Tab.Screen name='Pending' component={PendingScreen} />
-            )}
-
-            {user.data.type === 'Driver' ? (
-                <></>
-            ) : (
-                <Tab.Screen name='Accepted' component={AcceptedScreen} />
-            )}
-            <Tab.Screen name='Settings' component={SettingsScreen} />
+            <Tab.Screen name='Ajustes' component={SettingsScreen} />
         </Tab.Navigator>
     );
 };

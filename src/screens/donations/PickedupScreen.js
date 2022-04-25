@@ -1,28 +1,28 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import React from 'react';
+import ListScreen from './pickedup/ListScreen';
+import ViewScreen from './pickedup/ViewScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import ViewScreen from './accepted/ViewScreen';
-import ListScreen from './accepted/ListScreen';
 
 const Stack = createNativeStackNavigator();
 
-const AcceptedScreen = () => {
+const PickedupScreen = () => {
     return (
         <Stack.Navigator initialRouteName='List'>
             <Stack.Screen
                 name='List'
                 component={ListScreen}
-                options={{ title: 'Recogiendo' }}
+                options={{ title: 'Recogido' }}
             />
             <Stack.Screen
                 name='View'
                 component={ViewScreen}
-                options={{ title: 'Recoger Información' }}
+                options={{ title: 'Donación Info' }}
             />
         </Stack.Navigator>
     );
 };
 
-export default AcceptedScreen;
+export default PickedupScreen;
 
 const styles = StyleSheet.create({});

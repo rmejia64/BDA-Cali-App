@@ -101,6 +101,7 @@ const LoginScreen = ({ navigation }) => {
                     style={styles.input}
                     autoCapitalize='none'
                     autoComplete='email'
+                    autoCorrect={false}
                 />
                 <TextInput
                     placeholder='Password'
@@ -109,11 +110,12 @@ const LoginScreen = ({ navigation }) => {
                     style={styles.input}
                     autoCapitalize='none'
                     autoComplete='password'
+                    autoCorrect={false}
                     secureTextEntry
                 />
                 <TouchableOpacity onPress={handleSignIn} style={styles.button}>
                     {loading ? (
-                        <ActivityIndicator />
+                        <ActivityIndicator color='white' />
                     ) : (
                         <Text style={styles.buttonText}>Login</Text>
                     )}

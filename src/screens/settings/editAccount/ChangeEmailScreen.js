@@ -95,13 +95,13 @@ const ChangeEmailScreen = ({ route, navigation }) => {
                 </View>
             </Modal>
             <View style={{ width: '80%' }}>
-                <Text style={styles.heading}>Change Email</Text>
+                <Text style={styles.heading}>Cambiar Email</Text>
                 <Text>
-                    If you would like to change your email, please enter a new
-                    one below.
+                    Si desea cambiar su correo electrónico, ingrese uno nuevo a
+                    continuación.
                 </Text>
                 <TextInput
-                    placeholder='Enter email here...'
+                    placeholder='Ingrese email aquí...'
                     value={email}
                     onChangeText={setEmail}
                     style={styles.input}
@@ -109,7 +109,7 @@ const ChangeEmailScreen = ({ route, navigation }) => {
                 />
                 {success ? (
                     <Text style={styles.success}>
-                        Email changed successfully!
+                        Email cambiado con éxito!
                     </Text>
                 ) : null}
                 <TouchableOpacity
@@ -120,7 +120,7 @@ const ChangeEmailScreen = ({ route, navigation }) => {
                     {isLoading ? (
                         <ActivityIndicator />
                     ) : (
-                        <Text style={styles.buttonText}>Update</Text>
+                        <Text style={styles.buttonText}>Actualizar</Text>
                     )}
                 </TouchableOpacity>
             </View>

@@ -11,7 +11,7 @@ import { AuthContext } from '../../../auth/Auth';
 import { getDocs, query, collection, where } from 'firebase/firestore';
 import { ListItem } from 'react-native-elements';
 
-const ListScreen = ({ navigation }) => {
+const ListScreen = ({ route, navigation }) => {
     let [user] = useState(AuthContext);
     user = user._currentValue.user;
 
@@ -19,13 +19,12 @@ const ListScreen = ({ navigation }) => {
     const [refreshKey, setRefreshKey] = useState(0);
     const [pickups, setPickups] = useState([]);
 
-    const getAssignedPickups = async () => {
-        setRefreshing(true);
+    const getAssignedPickups = async (refresh) => {
         let tempPickups = [];
         let q;
 
-        const acceptedDonations = collection(db, 'acceptedDonations');
-        q = query(acceptedDonations, where('driver', '==', user.id));
+        const accepted = collection(db, 'accepted');
+        q = query(accepted, where('pickup.driver', '==', user.id));
 
         try {
             const querySnapshot = await getDocs(q);
@@ -36,18 +35,22 @@ const ListScreen = ({ navigation }) => {
         } catch (error) {
             console.error(error.message);
         }
+    };
 
-        setRefreshing(false);
+    const formatAddress = (address) => {
+        return `${address.street}\n${address.city}, ${address.region}`;
     };
 
     useEffect(() => {
         navigation.addListener('focus', () => {
-            setRefreshKey((oldKey) => oldKey + 1);
+            getAssignedPickups();
         });
     });
 
     useEffect(() => {
+        setRefreshing(true);
         getAssignedPickups();
+        setRefreshing(false);
     }, [refreshKey]);
 
     return (
@@ -55,29 +58,32 @@ const ListScreen = ({ navigation }) => {
             refreshControl={
                 <RefreshControl
                     refreshing={refreshing}
-                    onRefresh={getAssignedPickups}
+                    onRefresh={() => {
+                        setRefreshKey((oldkey) => oldkey + 1);
+                    }}
                 />
             }
         >
             {pickups.map((pickup, idx) => {
+                const data = pickup.data;
+                const id = pickup.id;
+                const address = formatAddress(data.client.address);
                 return (
                     <ListItem
-                        key={pickup.id}
+                        key={id}
                         onPress={() => {
-                            navigation.navigate('View', {
-                                id: pickup.id,
-                                data: pickup.data,
+                            navigation.push('View', {
+                                id,
+                                data,
                             });
                         }}
                         topDivider={idx === 0}
                         bottomDivider
                     >
                         <ListItem.Content>
-                            <ListItem.Title>{pickup.id}</ListItem.Title>
-                            <ListItem.Subtitle>
-                                {/* {pickup.data.certificate ? } */}
-                            </ListItem.Subtitle>
+                            <ListItem.Title>{address}</ListItem.Title>
                         </ListItem.Content>
+                        <ListItem.Chevron />
                     </ListItem>
                 );
             })}
