@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "76021301881",
+    "project_id": "cali-food-bank",
+    "storage_bucket": "cali-food-bank.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:76021301881:android:c0a0955cbb04e5ebbf8aa8",
+        "android_client_info": {
+          "package_name": "com.fih.bdacaliapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "76021301881-b03r60mfbog2ftc1j2gvd6l548bjffpf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC88mhtwzsWISduLIkcKHwW-uarOlQY-eI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "76021301881-b03r60mfbog2ftc1j2gvd6l548bjffpf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

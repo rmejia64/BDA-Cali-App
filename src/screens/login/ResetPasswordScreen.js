@@ -77,25 +77,29 @@ const ResetPasswordScreen = ({ route, navigation }) => {
             </Modal>
             <View style={{ width: '80%' }}>
                 <View style={{ paddingBottom: 30 }}>
-                    <Text style={styles.heading}>Password Reset</Text>
+                    <Text style={styles.heading}>Cambiar la contraseña</Text>
                     <Text style={{ color: 'gray' }}>
-                        Enter your email for your account, and we will send you
-                        an email to reset your password.
+                        Ingrese su correo electrónico para su cuenta y le
+                        enviaremos un correo electrónico para restablecer su
+                        contraseña.
                     </Text>
                 </View>
                 <Text>Email</Text>
                 <TextInput
-                    placeholder='nombre@bdacali.com'
+                    placeholder='nombre@bancalimentos.com'
                     value={email}
                     onChangeText={(text) => setEmail(text)}
                     style={styles.input}
                     autoCapitalize='none'
+                    autoCorrect={false}
                 />
                 <TouchableOpacity
                     onPress={handleEmailSubmit}
                     style={styles.button}
                 >
-                    <Text style={styles.buttonText}>Reset password</Text>
+                    <Text style={styles.buttonText}>
+                        Enviar enlace de reinicio
+                    </Text>
                 </TouchableOpacity>
             </View>
         </KeyboardAvoidingView>

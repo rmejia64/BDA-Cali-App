@@ -12,12 +12,12 @@ const LoginHomeScreen = () => {
             <Stack.Screen
                 name='Login'
                 component={LoginScreen}
-                options={{ headerShown: false, title: 'Back' }}
+                options={{ headerShown: false }}
             />
             <Stack.Screen
                 name='ResetPassword'
                 component={ResetPasswordScreen}
-                options={{ title: 'Reset Password' }}
+                options={{ title: 'Cambiar la contraseña' }}
             />
         </Stack.Navigator>
     );

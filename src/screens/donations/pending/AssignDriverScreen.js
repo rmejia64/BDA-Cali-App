@@ -62,7 +62,7 @@ const AssignDriverScreen = ({ route, navigation }) => {
         }
     };
 
-    const handleAssignDriver = async (uid, idx) => {
+    const handleAssignDriver = async (driver, idx) => {
         setLoading(true);
         // handle checkbox selection (only one can be selected)
         const newCheckBoxes = Array(checkBox.length).fill(false);
@@ -75,11 +75,19 @@ const AssignDriverScreen = ({ route, navigation }) => {
 
         if (!checkBox[idx]) {
             await updateDoc(donationRef, {
-                'pickup.driver': uid,
+                'pickup.driver': driver.uid,
+                'pickup.driverName': `${driver.data.name.first} ${
+                    driver.data.name.last1
+                }${
+                    driver.data.name.last2 === null
+                        ? ''
+                        : ` ${driver.data.name.last2}`
+                }`,
             });
         } else {
             await updateDoc(donationRef, {
                 'pickup.driver': deleteField(),
+                'pickup.driverName': deleteField(),
             });
         }
 
@@ -117,7 +125,7 @@ const AssignDriverScreen = ({ route, navigation }) => {
                             <ListItem.CheckBox
                                 checked={checkBox[idx]}
                                 onPress={() => {
-                                    handleAssignDriver(driver.uid, idx);
+                                    handleAssignDriver(driver, idx);
                                 }}
                                 checkedIcon='dot-circle-o'
                                 uncheckedIcon='circle-o'

@@ -104,7 +104,7 @@ const LoginScreen = ({ navigation }) => {
                     autoCorrect={false}
                 />
                 <TextInput
-                    placeholder='Password'
+                    placeholder='Clave'
                     value={password}
                     onChangeText={(text) => setPassword(text)}
                     style={styles.input}
@@ -117,7 +117,7 @@ const LoginScreen = ({ navigation }) => {
                     {loading ? (
                         <ActivityIndicator color='white' />
                     ) : (
-                        <Text style={styles.buttonText}>Login</Text>
+                        <Text style={styles.buttonText}>Iniciar sesión</Text>
                     )}
                 </TouchableOpacity>
             </View>
@@ -127,7 +127,7 @@ const LoginScreen = ({ navigation }) => {
                 }}
                 style={styles.forgotPassword}
             >
-                <Text style={styles.hyperlink}>Forgot password</Text>
+                <Text style={styles.hyperlink}>Olvidar la contraseña</Text>
             </TouchableOpacity>
         </KeyboardAvoidingView>
     );

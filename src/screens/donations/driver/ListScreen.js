@@ -64,6 +64,19 @@ const ListScreen = ({ route, navigation }) => {
                 />
             }
         >
+            {pickups.length === 0 && (
+                <View style={styles.noPickups}>
+                    <Text
+                        style={{
+                            fontWeight: '400',
+                            fontSize: 24,
+                            color: '#626b79',
+                        }}
+                    >
+                        Sin nuevas recogidas.
+                    </Text>
+                </View>
+            )}
             {pickups.map((pickup, idx) => {
                 const data = pickup.data;
                 const id = pickup.id;
@@ -93,4 +106,10 @@ const ListScreen = ({ route, navigation }) => {
 
 export default ListScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+    noPickups: {
+        height: 200,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+});

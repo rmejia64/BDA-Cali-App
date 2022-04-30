@@ -28,8 +28,8 @@ const ViewScreen = ({ route, navigation }) => {
     const formattedDate =
         data.pickup === undefined
             ? null
-            : data.pickup.date === null
-            ? data.pickup.date
+            : data.pickup.date === undefined
+            ? null
             : data.pickup.date.toDate();
 
     const [driver, setDriver] = useState('');
@@ -46,8 +46,12 @@ const ViewScreen = ({ route, navigation }) => {
     const acceptDonation = async () => {
         setLoading(true);
 
+        const current = doc(db, 'pending', id);
+        const currentSnap = await getDoc(current);
+        const currentDonation = currentSnap.data();
+
         // copy donation over to accepted database
-        await setDoc(doc(db, 'accepted', id), data);
+        await setDoc(doc(db, 'accepted', id), currentDonation);
 
         // delete donation from donationsForms database
         await deleteDoc(doc(db, 'pending', id));
@@ -72,36 +76,27 @@ const ViewScreen = ({ route, navigation }) => {
 
     const getDriverName = async () => {
         setDriverLoading(true);
+        setLoading(true);
 
         const donationRef = doc(db, 'pending', id);
         const donationSnap = await getDoc(donationRef);
         const donation = donationSnap.data();
 
         if (donation.pickup === undefined) {
+            setDriver('');
             setDriverName('No asignado');
         } else {
             if (donation.pickup.driver === undefined) {
+                setDriver('');
                 setDriverName('No asignado');
             } else {
                 setDriver(donation.pickup.driver);
-                const userRef = doc(db, 'users', donation.pickup.driver);
-                const userSnap = await getDoc(userRef);
-                const user = userSnap.data();
-                if (userSnap.exists()) {
-                    setDriverName(
-                        `${user.name.first} ${user.name.last1}${
-                            user.name.last2 === null
-                                ? ''
-                                : ` ${user.name.last2}`
-                        }`
-                    );
-                } else {
-                    console.error('Driver not found...');
-                }
+                setDriverName(donation.pickup.driverName);
             }
         }
 
         setDriverLoading(false);
+        setLoading(false);
     };
 
     const handleDateConfirm = async (date) => {
@@ -309,8 +304,12 @@ const ViewScreen = ({ route, navigation }) => {
                     onPress={() => {
                         acceptDonation();
                     }}
-                    style={styles.acceptButton}
-                    disabled={driver === '' || pickupDate === null}
+                    style={
+                        loading || driver === '' || pickupDate === null
+                            ? styles.disabledButton
+                            : styles.acceptButton
+                    }
+                    disabled={loading || driver === '' || pickupDate === null}
                 >
                     {!loading ? (
                         <Text style={styles.acceptButtonText}>
@@ -379,6 +378,12 @@ const styles = StyleSheet.create({
     },
     acceptButton: {
         backgroundColor: '#0074cb',
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    disabledButton: {
+        backgroundColor: 'rgba(0, 116, 203, 0.2)',
         height: 50,
         justifyContent: 'center',
         alignItems: 'center',

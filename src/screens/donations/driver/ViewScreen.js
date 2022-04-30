@@ -159,20 +159,6 @@ const ViewScreen = ({ route, navigation }) => {
     };
 
     const handleDonationSubmit = async (values) => {
-        Alert.alert(
-            'Confirmar',
-            '¿Estás seguro de que quieres enviar esta donación?',
-            [
-                { text: 'Entregar', onPress: () => {} },
-                {
-                    text: 'Cancelar',
-                    onPress: () => {
-                        return;
-                    },
-                    style: 'cancel',
-                },
-            ]
-        );
         setLoading(true);
         setIsSubmitting(true);
 
@@ -185,7 +171,6 @@ const ViewScreen = ({ route, navigation }) => {
 
         if (hasReceipt === 'yes' && image !== null) {
             await uploadImagesAsync();
-            console.log('Uploading image...');
         }
 
         await setDoc(donationRef, data);
@@ -244,6 +229,7 @@ const ViewScreen = ({ route, navigation }) => {
         };
 
         const handleClear = () => {
+            console.log('clear');
             ref.current.clearSignature();
         };
 
@@ -312,7 +298,25 @@ const ViewScreen = ({ route, navigation }) => {
             <SignatureModal />
             <Formik
                 initialValues={{ noReceiptReason: '' }}
-                onSubmit={(values) => handleDonationSubmit(values)}
+                onSubmit={(values) => {
+                    Alert.alert(
+                        'Confirmar',
+                        '¿Estás seguro de que quieres enviar esta donación?',
+                        [
+                            {
+                                text: 'Entregar',
+                                onPress: () => {
+                                    handleDonationSubmit(values);
+                                },
+                            },
+                            {
+                                text: 'Cancelar',
+                                onPress: () => {},
+                                style: 'cancel',
+                            },
+                        ]
+                    );
+                }}
                 validate={(values) => {
                     const errors = {};
                     if (signature === null) {

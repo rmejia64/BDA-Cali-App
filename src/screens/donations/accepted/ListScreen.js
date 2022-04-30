@@ -7,7 +7,14 @@ import {
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { db } from '../../../firebase/config';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import {
+    collection,
+    getDoc,
+    getDocs,
+    orderBy,
+    query,
+    doc,
+} from 'firebase/firestore';
 import { Text, Chip, ListItem, Button, CheckBox } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -20,7 +27,6 @@ const ListScreen = ({ navigation }) => {
     const [statusFilter, setStatusFilter] = useState('all');
     const [tempStatusFilter, setTempStatusFilter] = useState('all');
     const [filterModalVisible, setFilterModalVisible] = useState(false);
-    const [filters, setFilters] = useState(['newest', 'all']);
 
     const filterTranslations = {
         all: 'Todos',
@@ -55,14 +61,23 @@ const ListScreen = ({ navigation }) => {
                               data.pickup.date === undefined
                           );
                 if (statusFilter === 'all') {
-                    forms.push({ id: doc.id, data: data });
+                    forms.push({
+                        id: doc.id,
+                        data: data,
+                    });
                 } else if (statusFilter === 'ready') {
                     if (ready) {
-                        forms.push({ id: doc.id, data: data });
+                        forms.push({
+                            id: doc.id,
+                            data: data,
+                        });
                     }
                 } else if (statusFilter === 'notready') {
                     if (!ready) {
-                        forms.push({ id: doc.id, data: data });
+                        forms.push({
+                            id: doc.id,
+                            data: data,
+                        });
                     }
                 }
             });
@@ -72,12 +87,6 @@ const ListScreen = ({ navigation }) => {
         }
 
         setRefreshing(false);
-    };
-
-    const getAge = (date) => {
-        const difference = new Date().getTime() - date.getTime();
-        const result = Math.round(difference) / (1000 * 3600 * 24);
-        return result < 1 ? 'New' : result.toFixed(0) + ' days old';
     };
 
     // useEffect(() => {
@@ -273,13 +282,6 @@ const ListScreen = ({ navigation }) => {
                     {donations.map((pd, idx) => {
                         const data = pd.data;
                         const id = pd.id;
-                        const ready =
-                            data.pickup === undefined
-                                ? false
-                                : !(
-                                      data.pickup.driver === undefined ||
-                                      data.pickup.date === undefined
-                                  );
                         return (
                             <ListItem
                                 key={id}
@@ -292,19 +294,6 @@ const ListScreen = ({ navigation }) => {
                                 topDivider={idx === 0}
                                 bottomDivider
                             >
-                                {ready ? (
-                                    <Icon
-                                        name='check-circle'
-                                        size={30}
-                                        color='green'
-                                    />
-                                ) : (
-                                    <Icon
-                                        name='clock'
-                                        size={30}
-                                        color='#dbdbdb'
-                                    />
-                                )}
                                 <ListItem.Content>
                                     <ListItem.Title>
                                         {data.org !== undefined
@@ -316,11 +305,32 @@ const ListScreen = ({ navigation }) => {
                                                   ? ''
                                                   : ` ${data.indiv.name.last2}`)}
                                     </ListItem.Title>
-                                    <ListItem.Subtitle>
-                                        {data.dateCreated
-                                            .toDate()
-                                            .toLocaleDateString('es-CO')}
-                                    </ListItem.Subtitle>
+                                    <ListItem.Content
+                                        style={{
+                                            flex: 1,
+                                            flexDirection: 'row',
+                                            justifyContent: 'space-around',
+                                            width: '100%',
+                                            marginTop: 10,
+                                        }}
+                                    >
+                                        <View>
+                                            <Text>Conductor:</Text>
+                                            <Text>
+                                                {data.pickup.driverName}
+                                            </Text>
+                                        </View>
+                                        <View>
+                                            <Text>Fecha:</Text>
+                                            <Text>
+                                                {data.pickup.date
+                                                    .toDate()
+                                                    .toLocaleDateString(
+                                                        'es-CO'
+                                                    )}
+                                            </Text>
+                                        </View>
+                                    </ListItem.Content>
                                 </ListItem.Content>
                                 <ListItem.Chevron />
                             </ListItem>

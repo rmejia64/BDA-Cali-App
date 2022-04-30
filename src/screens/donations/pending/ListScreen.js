@@ -32,6 +32,8 @@ const ListScreen = ({ navigation }) => {
 
     // grab all documents in donationForms collection from firebase
     const getPendingDonations = async () => {
+        setRefreshing(true);
+
         let forms = [];
         let q;
         const donations = collection(db, 'pending');
@@ -69,52 +71,9 @@ const ListScreen = ({ navigation }) => {
         } catch (error) {
             console.error(error);
         }
-    };
 
-    const getAge = (date) => {
-        const difference = new Date().getTime() - date.getTime();
-        const result = Math.round(difference) / (1000 * 3600 * 24);
-        return result < 1 ? 'New' : result.toFixed(0) + ' days old';
+        setRefreshing(false);
     };
-
-    // function Dropdown() {
-    //     const platform = Platform.OS;
-    //     if (platform === 'ios') {
-    //         const buttons = ['Cancel', 'Newest', 'Oldest', 'Ready'];
-    //         return (
-    //             <TouchableOpacity
-    //                 style={styles.actionSheetButton}
-    //                 onPress={() => {
-    //                     ActionSheetIOS.showActionSheetWithOptions(
-    //                         { options: buttons, cancelButtonIndex: 0 },
-    //                         (buttonIndex) => {
-    //                             if (buttonIndex !== 0) {
-    //                                 setFilter(buttons[buttonIndex]);
-    //                                 setRefreshKey((oldKey) => oldKey + 1);
-    //                             }
-    //                         }
-    //                     );
-    //                 }}
-    //             >
-    //                 <Text>{filter}</Text>
-    //                 <Icon name='menu-down' size={20} />
-    //             </TouchableOpacity>
-    //         );
-    //     } else {
-    //         return (
-    //             <Picker
-    //                 selectedValue={filter}
-    //                 onValueChange={(itemValue, itemIndex) => {
-    //                     setFilter(itemValue);
-    //                     setRefreshKey((oldKey) => oldKey + 1);
-    //                 }}
-    //             >
-    //                 <Picker.Item label='Newest' value='Newest' />
-    //                 <Picker.Item label='Oldest' value='Oldest' />
-    //             </Picker>
-    //         );
-    //     }
-    // }
 
     useEffect(() => {
         // refresh will trigger when the list screen is focused
@@ -124,9 +83,7 @@ const ListScreen = ({ navigation }) => {
     });
 
     useEffect(() => {
-        setRefreshing(true);
         getPendingDonations();
-        setRefreshing(false);
     }, [refreshKey]);
 
     return (
