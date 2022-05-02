@@ -41,6 +41,12 @@ const ListScreen = ({ route, navigation }) => {
         return `${address.street}\n${address.city}, ${address.region}`;
     };
 
+    const formatName = (indiv) => {
+        return `${indiv.name.first} ${indiv.name.last1}${
+            indiv.name.last2 !== null ? indiv.name.last2 : ''
+        }`;
+    };
+
     useEffect(() => {
         navigation.addListener('focus', () => {
             getAssignedPickups();
@@ -81,6 +87,10 @@ const ListScreen = ({ route, navigation }) => {
                 const data = pickup.data;
                 const id = pickup.id;
                 const address = formatAddress(data.client.address);
+                const name =
+                    data.type === 'indiv'
+                        ? formatName(data.indiv)
+                        : data.org.name;
                 return (
                     <ListItem
                         key={id}
@@ -94,7 +104,8 @@ const ListScreen = ({ route, navigation }) => {
                         bottomDivider
                     >
                         <ListItem.Content>
-                            <ListItem.Title>{address}</ListItem.Title>
+                            <ListItem.Title>{name}</ListItem.Title>
+                            <ListItem.Subtitle>{address}</ListItem.Subtitle>
                         </ListItem.Content>
                         <ListItem.Chevron />
                     </ListItem>

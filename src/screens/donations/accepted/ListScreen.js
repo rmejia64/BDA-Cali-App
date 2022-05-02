@@ -4,9 +4,9 @@ import {
     ScrollView,
     RefreshControl,
     Modal,
+    TouchableOpacity,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { db } from '../../../firebase/config';
 import {
     collection,
     getDoc,
@@ -15,26 +15,26 @@ import {
     query,
     doc,
 } from 'firebase/firestore';
-import { Text, Chip, ListItem, Button, CheckBox } from 'react-native-elements';
+import {
+    Text,
+    Chip,
+    ListItem,
+    Button,
+    CheckBox,
+    ThemeProvider,
+} from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { db } from '../../../firebase/config';
 
 const ListScreen = ({ navigation }) => {
     const [refreshing, setRefreshing] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
     const [donations, setDonations] = useState([]);
-    const [dateFilter, setDateFilter] = useState('newest');
-    const [tempDateFilter, setTempDateFilter] = useState('newest');
-    const [statusFilter, setStatusFilter] = useState('all');
-    const [tempStatusFilter, setTempStatusFilter] = useState('all');
-    const [filterModalVisible, setFilterModalVisible] = useState(false);
-
-    const filterTranslations = {
-        all: 'Todos',
-        ready: 'Listos',
-        notready: 'No Listos',
-        newest: 'Más nuevo',
-        oldest: 'Más viejo',
-    };
+    const [dateFilter, setDateFilter] = useState(null);
+    const [driverFilter, setDriverFilter] = useState(null);
+    const [driverModal, setDriverModal] = useState(false);
+    const [drivers, setDrivers] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     // grab all documents in donationForms collection from firebase
     const getAcceptedDonations = async () => {
@@ -43,43 +43,16 @@ const ListScreen = ({ navigation }) => {
         let q;
         const donations = collection(db, 'accepted');
 
-        if (dateFilter === 'newest') {
-            q = query(donations, orderBy('dateCreated', 'desc'));
-        } else if (dateFilter === 'oldest') {
-            q = query(donations, orderBy('dateCreated', 'asc'));
-        }
+        q = query(donations, orderBy('dateCreated', 'desc'));
 
         try {
             const querySnapshot = await getDocs(q);
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                const ready =
-                    data.pickup === undefined
-                        ? false
-                        : !(
-                              data.pickup.driver === undefined ||
-                              data.pickup.date === undefined
-                          );
-                if (statusFilter === 'all') {
-                    forms.push({
-                        id: doc.id,
-                        data: data,
-                    });
-                } else if (statusFilter === 'ready') {
-                    if (ready) {
-                        forms.push({
-                            id: doc.id,
-                            data: data,
-                        });
-                    }
-                } else if (statusFilter === 'notready') {
-                    if (!ready) {
-                        forms.push({
-                            id: doc.id,
-                            data: data,
-                        });
-                    }
-                }
+                forms.push({
+                    id: doc.id,
+                    data: data,
+                });
             });
             setDonations(forms);
         } catch (error) {
@@ -89,138 +62,137 @@ const ListScreen = ({ navigation }) => {
         setRefreshing(false);
     };
 
-    // useEffect(() => {
-    //     // refresh will trigger when the list screen is focused
-    //     navigation.addListener('focus', () => {
-    //         getAcceptedDonations();
-    //     });
-    // });
+    const getAllDrivers = async () => {
+        let tempDrivers = [];
+
+        const users = collection(db, 'users');
+        const userQuery = query(users, where('type', '==', 'driver'));
+
+        try {
+            const querySnapshot = await getDoc(userQuery);
+            querySnapshot.forEach((doc) => {
+                tempDrivers.push({ uid: doc.id, data: doc.data() });
+            });
+            setDrivers(tempDrivers);
+        } catch (error) {
+            console.error(error.message);
+        }
+    };
+
+    const SelectDriverModal = () => {
+        return (
+            <Modal visible={driverModal}>
+                <View style={styles.driverModalContainer}>
+                    <View style={styles.driverModalBox}>
+                        <View style={{ alignItems: 'flex-end' }}>
+                            <Icon
+                                name='close'
+                                color='#626b79'
+                                size={30}
+                                onPress={() => {
+                                    setDriverModal(false);
+                                }}
+                            />
+                        </View>
+                        <Text
+                            style={{
+                                fontSize: 24,
+                                fontWeight: '500',
+                                marginBottom: 24,
+                            }}
+                        >
+                            Selecciona un conductor
+                        </Text>
+                        {drivers.length === 0 ? (
+                            <Text>No hay controladores disponibles.</Text>
+                        ) : (
+                            <>
+                                <TouchableOpacity
+                                    style={{
+                                        backgroundColor: '#0074cb',
+                                        borderRadius: 5,
+                                    }}
+                                >
+                                    <Text
+                                        style={{
+                                            textAlign: 'center',
+                                            fontSize: 18,
+                                            color: 'white',
+                                            margin: 10,
+                                        }}
+                                    >
+                                        Obtener todos controladores
+                                    </Text>
+                                </TouchableOpacity>
+                                <ScrollView></ScrollView>
+                            </>
+                        )}
+                    </View>
+                </View>
+            </Modal>
+        );
+    };
+
+    useEffect(() => {
+        // refresh will trigger when the list screen is focused
+        navigation.addListener('focus', () => {
+            getAcceptedDonations();
+        });
+    });
 
     useEffect(() => {
         getAcceptedDonations();
     }, [refreshKey]);
 
+    useEffect(() => {
+        getAllDrivers();
+    }, []);
+
     return (
         <>
-            <Modal
-                visible={filterModalVisible}
-                animationType='fade'
-                transparent
-            >
-                <View style={styles.filterContainer}>
-                    <View style={styles.filterBox}>
-                        <View style={{ alignItems: 'flex-end' }}>
-                            <Icon
-                                name='close'
-                                color='#626b79'
-                                size={20}
-                                onPress={() => {
-                                    setTempDateFilter(dateFilter);
-                                    setTempStatusFilter(statusFilter);
-                                    setFilterModalVisible(false);
-                                }}
-                            />
-                        </View>
-                        <View>
-                            <Text style={styles.filterHeading}>
-                                Fecha de realización
-                            </Text>
-                            <CheckBox
-                                title='Más nuevo'
-                                checked={tempDateFilter === 'newest'}
-                                iconType='material-community'
-                                checkedIcon='radiobox-marked'
-                                uncheckedIcon='radiobox-blank'
-                                checkedColor='#0074cb'
-                                onPress={() => setTempDateFilter('newest')}
-                            />
-                            <CheckBox
-                                title='Más viejo'
-                                checked={tempDateFilter === 'oldest'}
-                                iconType='material-community'
-                                checkedIcon='radiobox-marked'
-                                uncheckedIcon='radiobox-blank'
-                                checkedColor='#0074cb'
-                                onPress={() => setTempDateFilter('oldest')}
-                            />
-                        </View>
-                        <View
-                            style={{
-                                borderBottomColor: 'rgba(0, 0, 0, 0.15)',
-                                borderBottomWidth: 1,
-                                marginVertical: 20,
-                            }}
-                        />
-                        <View>
-                            <Text style={styles.filterHeading}>Estado</Text>
-                            <CheckBox
-                                title='Listo'
-                                checked={tempStatusFilter === 'ready'}
-                                iconType='material-community'
-                                checkedIcon='radiobox-marked'
-                                uncheckedIcon='radiobox-blank'
-                                checkedColor='#0074cb'
-                                onPress={() => setTempStatusFilter('ready')}
-                            />
-                            <CheckBox
-                                title='No Listo'
-                                checked={tempStatusFilter === 'notready'}
-                                iconType='material-community'
-                                checkedIcon='radiobox-marked'
-                                uncheckedIcon='radiobox-blank'
-                                checkedColor='#0074cb'
-                                onPress={() => setTempStatusFilter('notready')}
-                            />
-                            <CheckBox
-                                title='Todos'
-                                checked={tempStatusFilter === 'all'}
-                                iconType='material-community'
-                                checkedIcon='radiobox-marked'
-                                uncheckedIcon='radiobox-blank'
-                                checkedColor='#0074cb'
-                                onPress={() => setTempStatusFilter('all')}
-                            />
-                        </View>
-                        <View
-                            style={{
-                                borderBottomColor: 'rgba(0, 0, 0, 0.15)',
-                                borderBottomWidth: 1,
-                                marginVertical: 20,
-                            }}
-                        />
-                        <View
-                            style={{
-                                alignItems: 'center',
-                                marginBottom: 20,
-                            }}
-                        >
-                            <Button
-                                title='Filtrar'
-                                onPress={() => {
-                                    setStatusFilter(tempStatusFilter);
-                                    setDateFilter(tempDateFilter);
-                                    setFilterModalVisible(false);
-                                    setRefreshKey((oldKey) => oldKey + 1);
-                                }}
-                                containerStyle={{ width: '92%' }}
-                            />
-                        </View>
-                    </View>
-                </View>
-            </Modal>
+            <SelectDriverModal />
             <View
                 style={{
                     backgroundColor: 'white',
-                    height: '8%',
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     paddingRight: 10,
                 }}
             >
-                <View style={{ flexDirection: 'row' }}>
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        marginVertical: 10,
+                    }}
+                >
                     <Chip
-                        title={filterTranslations[dateFilter]}
+                        title={
+                            driverFilter === null
+                                ? 'Todos conductores'
+                                : driverFilter
+                        }
+                        icon={{
+                            name: 'truck',
+                            type: 'material-community',
+                            size: 20,
+                            color: 'white',
+                        }}
+                        containerStyle={{
+                            paddingLeft: 10,
+                        }}
+                        buttonStyle={{
+                            backgroundColor: '#0074cb',
+                        }}
+                        onPress={() => {
+                            setDriverModal(true);
+                        }}
+                    />
+                    <Chip
+                        title={
+                            dateFilter === null ? 'Todas fechas' : dateFilter
+                        }
                         icon={{
                             name: 'calendar',
                             type: 'material-community',
@@ -231,31 +203,11 @@ const ListScreen = ({ navigation }) => {
                             paddingLeft: 10,
                         }}
                         buttonStyle={{
-                            backgroundColor: '#9fabbb',
+                            backgroundColor: '#0074cb',
                         }}
-                    />
-                    <Chip
-                        title={filterTranslations[statusFilter]}
-                        icon={{
-                            name: 'view-list',
-                            type: 'material-community',
-                            size: 20,
-                            color: 'white',
-                        }}
-                        containerStyle={{
-                            paddingLeft: 10,
-                        }}
-                        buttonStyle={{
-                            backgroundColor: '#9fabbb',
-                        }}
+                        onPress={() => {}}
                     />
                 </View>
-                <Icon
-                    name='filter-variant'
-                    color='#0074cb'
-                    size={25}
-                    onPress={() => setFilterModalVisible(true)}
-                />
             </View>
             <ScrollView
                 refreshControl={
@@ -404,5 +356,15 @@ const styles = StyleSheet.create({
     chips: {
         flex: 1,
         flexDirection: 'row',
+    },
+    driverModalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        margin: 20,
+    },
+    driverModalBox: {
+        width: '100%',
+        height: '100%',
     },
 });

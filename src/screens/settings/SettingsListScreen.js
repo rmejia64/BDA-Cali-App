@@ -62,7 +62,7 @@ const SettingsScreen = ({ navigation }) => {
                     <ListItem.Chevron />
                 </ListItem>
             ) : null}
-            <ListItem
+            {/* <ListItem
                 onPress={() => {
                     navigation.push('Language');
                 }}
@@ -73,7 +73,7 @@ const SettingsScreen = ({ navigation }) => {
                     <ListItem.Title>Idioma</ListItem.Title>
                 </ListItem.Content>
                 <ListItem.Chevron />
-            </ListItem>
+            </ListItem> */}
             <ListItem onPress={handleSignout} bottomDivider>
                 <Icon name={'logout'} size={20} color={'red'} />
                 <ListItem.Content>

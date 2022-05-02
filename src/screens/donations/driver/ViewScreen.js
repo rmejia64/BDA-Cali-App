@@ -293,7 +293,7 @@ const ViewScreen = ({ route, navigation }) => {
     }, []);
 
     return (
-        <KeyboardAvoidingView style={styles.container} behavior='padding'>
+        <View>
             <LoadingModal visible={loading} />
             <SignatureModal />
             <Formik
@@ -317,6 +317,8 @@ const ViewScreen = ({ route, navigation }) => {
                         ]
                     );
                 }}
+                validateOnChange={false}
+                validateOnBlur={false}
                 validate={(values) => {
                     const errors = {};
                     if (signature === null) {
@@ -352,8 +354,13 @@ const ViewScreen = ({ route, navigation }) => {
                     errors,
                     touched,
                 }) => (
-                    <>
-                        <ScrollView style={styles.scrollContainer}>
+                    <KeyboardAvoidingView
+                        style={{
+                            height: '100%',
+                            justifyContent: 'space-between',
+                        }}
+                    >
+                        <ScrollView>
                             <View style={{ alignItems: 'center' }}>
                                 <Text style={styles.header}>
                                     Firma del donante{' '}
@@ -542,10 +549,10 @@ const ViewScreen = ({ route, navigation }) => {
                                 RECOGIDO
                             </Text>
                         </TouchableOpacity>
-                    </>
+                    </KeyboardAvoidingView>
                 )}
             </Formik>
-        </KeyboardAvoidingView>
+        </View>
     );
 };
 

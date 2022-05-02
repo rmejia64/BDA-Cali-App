@@ -6,6 +6,7 @@ import {
     ScrollView,
     Modal,
     ActivityIndicator,
+    Alert,
 } from 'react-native';
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import {
@@ -21,6 +22,7 @@ import { db } from '../../../firebase/config';
 import { Button, ListItem } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import DateTimePicker from 'react-native-modal-datetime-picker';
+import LoadingModal from '../../../../components/LoadingModal';
 
 const ViewScreen = ({ route, navigation }) => {
     const data = route.params.data;
@@ -36,7 +38,7 @@ const ViewScreen = ({ route, navigation }) => {
     const [driverName, setDriverName] = useState('');
     const [driverLoading, setDriverLoading] = useState(false);
     const [pickupDate, setPickupDate] = useState(formattedDate);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
     const [modalType, setModalType] = useState('');
 
@@ -162,6 +164,7 @@ const ViewScreen = ({ route, navigation }) => {
 
     return (
         <View style={styles.container}>
+            <LoadingModal visible={loading} />
             <ScrollView>
                 <DonationModal />
                 <ListItem topDivider bottomDivider>
@@ -302,7 +305,23 @@ const ViewScreen = ({ route, navigation }) => {
             <View style={styles.footer}>
                 <TouchableOpacity
                     onPress={() => {
-                        acceptDonation();
+                        Alert.alert(
+                            'Confirmar',
+                            '¿Estás seguro de que quieres enviar esta donación?',
+                            [
+                                {
+                                    text: 'Cancelar',
+                                    onPress: () => {},
+                                    style: 'cancel',
+                                },
+                                {
+                                    text: 'Entregar',
+                                    onPress: () => {
+                                        acceptDonation();
+                                    },
+                                },
+                            ]
+                        );
                     }}
                     style={
                         loading || driver === '' || pickupDate === null

@@ -197,7 +197,7 @@ const ListScreen = ({ navigation }) => {
             <View
                 style={{
                     backgroundColor: 'white',
-                    height: '8%',
+                    height: '10%',
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
