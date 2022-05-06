@@ -1,16 +1,10 @@
 import { StyleSheet, Text, View } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { ListItem } from 'react-native-elements';
-import { db, auth } from '../../../firebase/config';
-import { doc, getDoc } from 'firebase/firestore';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useSelector } from 'react-redux';
 
 const EditAccountListScreen = ({ navigation }) => {
-    const [firstName, setFirstName] = useState('');
-    const [lastName1, setLastName1] = useState('');
-    const [lastName2, setLastName2] = useState('');
-    const [type, setType] = useState('');
-    const [email, setEmail] = useState('');
+    const data = useSelector((state) => state.user.data);
 
     const types = {
         admin: 'Administrador',
@@ -18,38 +12,27 @@ const EditAccountListScreen = ({ navigation }) => {
         driver: 'Conductor',
     };
 
-    useEffect(async () => {
-        const userRef = doc(db, 'users', auth.currentUser.uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-            const data = userSnap.data();
-            setFirstName(data.name.first);
-            setLastName1(data.name.last1);
-            setLastName2(data.name.last2 === null ? '' : data.name.last2);
-            setType(types[data.type]);
-            setEmail(data.email);
-        } else {
-            console.error('User not found.');
-        }
-    }, []);
-
     return (
         <View>
             <ListItem bottomDivider>
                 <ListItem.Content>
                     <ListItem.Title>Nombre</ListItem.Title>
                     <ListItem.Subtitle right>
-                        {firstName +
+                        {data.name.first +
                             ' ' +
-                            lastName1 +
-                            (lastName2 !== '' ? ' ' + lastName2 : '')}
+                            data.name.last1 +
+                            (data.name.last2 !== null
+                                ? ' ' + data.name.last2
+                                : '')}
                     </ListItem.Subtitle>
                 </ListItem.Content>
             </ListItem>
             <ListItem bottomDivider>
                 <ListItem.Content>
                     <ListItem.Title>Tipo de Cuenta</ListItem.Title>
-                    <ListItem.Subtitle right>{type}</ListItem.Subtitle>
+                    <ListItem.Subtitle right>
+                        {types[data.type]}
+                    </ListItem.Subtitle>
                 </ListItem.Content>
             </ListItem>
             <ListItem
@@ -60,7 +43,7 @@ const EditAccountListScreen = ({ navigation }) => {
             >
                 <ListItem.Content>
                     <ListItem.Title>Email</ListItem.Title>
-                    <ListItem.Subtitle right>{email}</ListItem.Subtitle>
+                    <ListItem.Subtitle right>{data.email}</ListItem.Subtitle>
                 </ListItem.Content>
                 <ListItem.Chevron />
             </ListItem>

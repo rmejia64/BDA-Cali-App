@@ -4,16 +4,16 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { auth } from '../../firebase/config';
 import { signOut } from 'firebase/auth';
 import { ListItem } from 'react-native-elements';
-import { AuthContext } from '../../auth/Auth';
+import { useSelector } from 'react-redux';
 
 const SettingsScreen = ({ navigation }) => {
-    let [user] = useState(AuthContext);
-    user = user._currentValue.user;
+    const data = useSelector((state) => state.user.data);
 
     const handleSignout = () => {
         signOut(auth)
             .then(() => {
                 // sign-out successful
+                navigation.replace('LoginHomeScreen');
             })
             .catch((error) => console.error(error.message));
     };
@@ -32,7 +32,7 @@ const SettingsScreen = ({ navigation }) => {
                 </ListItem.Content>
                 <ListItem.Chevron />
             </ListItem>
-            {user.data.type === 'admin' ? (
+            {data.type === 'admin' ? (
                 <ListItem
                     onPress={() => {
                         navigation.push('ManageAccounts');
@@ -48,7 +48,7 @@ const SettingsScreen = ({ navigation }) => {
                     <ListItem.Chevron />
                 </ListItem>
             ) : null}
-            {user.data.type === 'admin' ? (
+            {data.type === 'admin' ? (
                 <ListItem
                     onPress={() => {
                         navigation.push('CreateAccount');

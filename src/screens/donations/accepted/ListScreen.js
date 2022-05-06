@@ -9,41 +9,69 @@ import {
 import React, { useEffect, useState } from 'react';
 import {
     collection,
-    getDoc,
     getDocs,
     orderBy,
     query,
-    doc,
+    Timestamp,
+    where,
 } from 'firebase/firestore';
-import {
-    Text,
-    Chip,
-    ListItem,
-    Button,
-    CheckBox,
-    ThemeProvider,
-} from 'react-native-elements';
+import { Text, Chip, ListItem } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { db } from '../../../firebase/config';
+import DateTimePicker from 'react-native-modal-datetime-picker';
+import { useSelector } from 'react-redux';
 
-const ListScreen = ({ navigation }) => {
+const ListScreen = ({ route, navigation }) => {
+    const drivers = useSelector((state) => state.user.drivers);
     const [refreshing, setRefreshing] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
     const [donations, setDonations] = useState([]);
+    const [dateModalOpen, setDateModalOpen] = useState(false);
     const [dateFilter, setDateFilter] = useState(null);
+    const [dateFilterOpen, setDateFilterOpen] = useState(false);
+    const [formattedDate, setFormattedDate] = useState('');
     const [driverFilter, setDriverFilter] = useState(null);
+    const [driverFilterName, setDriverFilterName] = useState('');
     const [driverModal, setDriverModal] = useState(false);
-    const [drivers, setDrivers] = useState([]);
-    const [loading, setLoading] = useState(false);
 
     // grab all documents in donationForms collection from firebase
-    const getAcceptedDonations = async () => {
+    const getAcceptedDonations = async (id = null, date = null) => {
         setRefreshing(true);
         let forms = [];
-        let q;
+        let q, dateStart, dateEnd;
         const donations = collection(db, 'accepted');
 
-        q = query(donations, orderBy('dateCreated', 'desc'));
+        if (date !== null) {
+            let start = new Date(date.setHours(0, 0, 0, 0));
+            let end = new Date(date.setHours(23, 59, 59, 999));
+            dateStart = Timestamp.fromDate(start);
+            dateEnd = Timestamp.fromDate(end);
+        }
+
+        if (id === null && date === null) {
+            q = query(donations, orderBy('pickup.date'));
+        } else if (id !== null && date === null) {
+            q = query(
+                donations,
+                orderBy('pickup.date'),
+                where('pickup.driver', '==', id)
+            );
+        } else if (id === null && date !== null) {
+            q = query(
+                donations,
+                orderBy('pickup.date'),
+                where('pickup.date', '>=', dateStart),
+                where('pickup.date', '<=', dateEnd)
+            );
+        } else {
+            q = query(
+                donations,
+                orderBy('pickup.date'),
+                where('pickup.driver', '==', id),
+                where('pickup.date', '>=', dateStart),
+                where('pickup.date', '<=', dateEnd)
+            );
+        }
 
         try {
             const querySnapshot = await getDocs(q);
@@ -62,28 +90,11 @@ const ListScreen = ({ navigation }) => {
         setRefreshing(false);
     };
 
-    const getAllDrivers = async () => {
-        let tempDrivers = [];
-
-        const users = collection(db, 'users');
-        const userQuery = query(users, where('type', '==', 'driver'));
-
-        try {
-            const querySnapshot = await getDoc(userQuery);
-            querySnapshot.forEach((doc) => {
-                tempDrivers.push({ uid: doc.id, data: doc.data() });
-            });
-            setDrivers(tempDrivers);
-        } catch (error) {
-            console.error(error.message);
-        }
-    };
-
     const SelectDriverModal = () => {
         return (
             <Modal visible={driverModal}>
-                <View style={styles.driverModalContainer}>
-                    <View style={styles.driverModalBox}>
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalBox}>
                         <View style={{ alignItems: 'flex-end' }}>
                             <Icon
                                 name='close'
@@ -111,6 +122,12 @@ const ListScreen = ({ navigation }) => {
                                     style={{
                                         backgroundColor: '#0074cb',
                                         borderRadius: 5,
+                                        marginBottom: 24,
+                                    }}
+                                    onPress={() => {
+                                        setDriverFilter(null);
+                                        setDriverModal(false);
+                                        getAcceptedDonations(null, dateFilter);
                                     }}
                                 >
                                     <Text
@@ -124,7 +141,42 @@ const ListScreen = ({ navigation }) => {
                                         Obtener todos controladores
                                     </Text>
                                 </TouchableOpacity>
-                                <ScrollView></ScrollView>
+                                <ScrollView>
+                                    {drivers.map((driver, idx) => {
+                                        const data = driver.data;
+                                        const id = driver.uid;
+                                        const name = `${data.name.first} ${
+                                            data.name.last1
+                                        }${
+                                            data.name.last2 === null
+                                                ? ''
+                                                : ` ${data.name.last2}`
+                                        }`;
+
+                                        return (
+                                            <ListItem
+                                                topDivider={idx === 0}
+                                                bottomDivider
+                                                key={id}
+                                                onPress={() => {
+                                                    setDriverFilter(id);
+                                                    setDriverFilterName(name);
+                                                    getAcceptedDonations(
+                                                        id,
+                                                        dateFilter
+                                                    );
+                                                    setDriverModal(false);
+                                                }}
+                                            >
+                                                <ListItem.Content>
+                                                    <ListItem.Title>
+                                                        {name}
+                                                    </ListItem.Title>
+                                                </ListItem.Content>
+                                            </ListItem>
+                                        );
+                                    })}
+                                </ScrollView>
                             </>
                         )}
                     </View>
@@ -133,24 +185,107 @@ const ListScreen = ({ navigation }) => {
         );
     };
 
-    useEffect(() => {
-        // refresh will trigger when the list screen is focused
-        navigation.addListener('focus', () => {
-            getAcceptedDonations();
-        });
-    });
+    const DatePickerModal = () => {
+        return (
+            <Modal visible={dateModalOpen}>
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalBox}>
+                        <View style={{ alignItems: 'flex-end' }}>
+                            <Icon
+                                name='close'
+                                color='#626b79'
+                                size={30}
+                                onPress={() => {
+                                    setDateModalOpen(false);
+                                }}
+                            />
+                        </View>
+                        <Text
+                            style={{
+                                fontSize: 24,
+                                fontWeight: '500',
+                                marginBottom: 24,
+                            }}
+                        >
+                            Fecha de recogida
+                        </Text>
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: '#0074cb',
+                                borderRadius: 5,
+                                marginBottom: 24,
+                            }}
+                            onPress={() => {
+                                setDateFilter(null);
+                                setDateModalOpen(false);
+                                getAcceptedDonations(driverFilter, null);
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    textAlign: 'center',
+                                    fontSize: 18,
+                                    color: 'white',
+                                    margin: 10,
+                                }}
+                            >
+                                Obtener todas fechas
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: '#6bb7fb',
+                                borderRadius: 5,
+                                marginBottom: 24,
+                            }}
+                            onPress={() => {
+                                setDateModalOpen(false);
+                                setDateFilterOpen(true);
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    textAlign: 'center',
+                                    fontSize: 18,
+                                    color: 'white',
+                                    margin: 10,
+                                }}
+                            >
+                                Seleccionar fecha especifica
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+        );
+    };
 
     useEffect(() => {
-        getAcceptedDonations();
+        if (route.params !== undefined && route.params.refresh) {
+            getAcceptedDonations(driverFilter, dateFilter);
+        }
+    }, [route.params]);
+
+    useEffect(() => {
+        getAcceptedDonations(driverFilter, dateFilter);
     }, [refreshKey]);
-
-    useEffect(() => {
-        getAllDrivers();
-    }, []);
 
     return (
         <>
             <SelectDriverModal />
+            <DatePickerModal />
+            <DateTimePicker
+                isVisible={dateFilterOpen}
+                mode='date'
+                onConfirm={(date) => {
+                    setDateFilterOpen(false);
+                    setDateFilter(date);
+                    setFormattedDate(date.toLocaleDateString('es-CO'));
+                    getAcceptedDonations(driverFilter, date);
+                }}
+                onCancel={() => setDateFilterOpen(false)}
+                isDarkModeEnabled={false}
+            />
             <View
                 style={{
                     backgroundColor: 'white',
@@ -171,7 +306,7 @@ const ListScreen = ({ navigation }) => {
                         title={
                             driverFilter === null
                                 ? 'Todos conductores'
-                                : driverFilter
+                                : driverFilterName
                         }
                         icon={{
                             name: 'truck',
@@ -191,7 +326,7 @@ const ListScreen = ({ navigation }) => {
                     />
                     <Chip
                         title={
-                            dateFilter === null ? 'Todas fechas' : dateFilter
+                            dateFilter === null ? 'Todas fechas' : formattedDate
                         }
                         icon={{
                             name: 'calendar',
@@ -205,7 +340,9 @@ const ListScreen = ({ navigation }) => {
                         buttonStyle={{
                             backgroundColor: '#0074cb',
                         }}
-                        onPress={() => {}}
+                        onPress={() => {
+                            setDateModalOpen(true);
+                        }}
                     />
                 </View>
             </View>
@@ -213,7 +350,9 @@ const ListScreen = ({ navigation }) => {
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
-                        onRefresh={getAcceptedDonations}
+                        onRefresh={() => {
+                            getAcceptedDonations(driverFilter, dateFilter);
+                        }}
                     />
                 }
             >
@@ -261,26 +400,59 @@ const ListScreen = ({ navigation }) => {
                                         style={{
                                             flex: 1,
                                             flexDirection: 'row',
-                                            justifyContent: 'space-around',
                                             width: '100%',
                                             marginTop: 10,
                                         }}
                                     >
-                                        <View>
-                                            <Text>Conductor:</Text>
-                                            <Text>
-                                                {data.pickup.driverName}
-                                            </Text>
+                                        <View
+                                            style={{
+                                                flexDirection: 'row',
+                                                width: '50%',
+                                                alignItems: 'center',
+                                            }}
+                                        >
+                                            <Icon name='truck' size={25} />
+                                            <View style={{ paddingLeft: 10 }}>
+                                                <Text
+                                                    style={{
+                                                        fontWeight: '500',
+                                                    }}
+                                                >
+                                                    Conductor:
+                                                </Text>
+                                                <Text
+                                                    style={{ color: '#626b79' }}
+                                                >
+                                                    {data.pickup.driverName}
+                                                </Text>
+                                            </View>
                                         </View>
-                                        <View>
-                                            <Text>Fecha:</Text>
-                                            <Text>
-                                                {data.pickup.date
-                                                    .toDate()
-                                                    .toLocaleDateString(
-                                                        'es-CO'
-                                                    )}
-                                            </Text>
+                                        <View
+                                            style={{
+                                                flexDirection: 'row',
+                                                width: '50%',
+                                                alignItems: 'center',
+                                            }}
+                                        >
+                                            <Icon name='calendar' size={25} />
+                                            <View style={{ paddingLeft: 10 }}>
+                                                <Text
+                                                    style={{
+                                                        fontWeight: '500',
+                                                    }}
+                                                >
+                                                    Fecha:
+                                                </Text>
+                                                <Text
+                                                    style={{ color: '#626b79' }}
+                                                >
+                                                    {data.pickup.date
+                                                        .toDate()
+                                                        .toLocaleDateString(
+                                                            'es-CO'
+                                                        )}
+                                                </Text>
+                                            </View>
                                         </View>
                                     </ListItem.Content>
                                 </ListItem.Content>
@@ -301,31 +473,6 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingBottom: 10,
         marginTop: 20,
-    },
-    filterContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(52, 52, 52, 0.8)',
-    },
-    filterBox: {
-        justifyContent: 'center',
-        padding: 20,
-        width: '80%',
-        backgroundColor: 'white',
-        borderRadius: 10,
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    filterHeading: {
-        marginLeft: 10,
-        marginBottom: 5,
-        fontSize: 18,
     },
     cardText: {
         flex: 1,
@@ -357,13 +504,15 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row',
     },
-    driverModalContainer: {
+    modalContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        margin: 20,
+        marginTop: 48,
+        marginBottom: 32,
+        marginHorizontal: 32,
     },
-    driverModalBox: {
+    modalBox: {
         width: '100%',
         height: '100%',
     },

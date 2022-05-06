@@ -3,25 +3,21 @@ import { createSlice } from '@reduxjs/toolkit';
 export const userSlice = createSlice({
     name: 'user',
     initialState: {
-        email: '',
-        firstName: '',
-        lastName1: '',
-        lastName2: '',
-        type: '',
+        id: null,
+        data: null,
+        drivers: null,
     },
     reducers: {
-        updateUser: (state, action) => {
-            state.email = action.payload.email;
-            state.firstName = action.payload.firstName;
-            state.lastName1 = action.payload.lastName1;
-            state.lastName2 = action.payload.lastName2;
-            state.type = action.payload.type;
+        setUser: (state, action) => {
+            state.id = action.payload[0];
+            state.data = action.payload[1];
+        },
+        setDrivers: (state, action) => {
+            state.drivers = action.payload;
         },
     },
 });
 
-export const { updateUser } = userSlice.actions;
-
-export const getUserType = (state) => state.user.type;
+export const { setUser, setDrivers } = userSlice.actions;
 
 export default userSlice.reducer;

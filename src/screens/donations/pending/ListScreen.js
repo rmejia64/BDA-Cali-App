@@ -11,7 +11,7 @@ import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { Text, Chip, ListItem, Button, CheckBox } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const ListScreen = ({ navigation }) => {
+const ListScreen = ({ route, navigation }) => {
     const [refreshing, setRefreshing] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
     const [donations, setDonations] = useState([]);
@@ -76,11 +76,10 @@ const ListScreen = ({ navigation }) => {
     };
 
     useEffect(() => {
-        // refresh will trigger when the list screen is focused
-        navigation.addListener('focus', () => {
+        if (route.params !== undefined && route.params.refresh) {
             getPendingDonations();
-        });
-    });
+        }
+    }, [route.params]);
 
     useEffect(() => {
         getPendingDonations();
@@ -197,14 +196,19 @@ const ListScreen = ({ navigation }) => {
             <View
                 style={{
                     backgroundColor: 'white',
-                    height: '10%',
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     paddingRight: 10,
                 }}
             >
-                <View style={{ flexDirection: 'row' }}>
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        marginVertical: 10,
+                    }}
+                >
                     <Chip
                         title={filterTranslations[dateFilter]}
                         icon={{
@@ -217,8 +221,9 @@ const ListScreen = ({ navigation }) => {
                             paddingLeft: 10,
                         }}
                         buttonStyle={{
-                            backgroundColor: '#9fabbb',
+                            backgroundColor: '#0074cb',
                         }}
+                        onPress={() => setFilterModalVisible(true)}
                     />
                     <Chip
                         title={filterTranslations[statusFilter]}
@@ -232,16 +237,11 @@ const ListScreen = ({ navigation }) => {
                             paddingLeft: 10,
                         }}
                         buttonStyle={{
-                            backgroundColor: '#9fabbb',
+                            backgroundColor: '#0074cb',
                         }}
+                        onPress={() => setFilterModalVisible(true)}
                     />
                 </View>
-                <Icon
-                    name='filter-variant'
-                    color='#0074cb'
-                    size={25}
-                    onPress={() => setFilterModalVisible(true)}
-                />
             </View>
             <ScrollView
                 refreshControl={
@@ -311,10 +311,17 @@ const ListScreen = ({ navigation }) => {
                                                   ? ''
                                                   : ` ${data.indiv.name.last2}`)}
                                     </ListItem.Title>
-                                    <ListItem.Subtitle>
+                                    <ListItem.Subtitle
+                                        style={{ color: '#626b79' }}
+                                    >
                                         {data.dateCreated
                                             .toDate()
                                             .toLocaleDateString('es-CO')}
+                                    </ListItem.Subtitle>
+                                    <ListItem.Subtitle
+                                        style={{ paddingTop: 5 }}
+                                    >
+                                        {`${data.client.address.street}\n${data.client.address.city}, ${data.client.address.region}`}
                                     </ListItem.Subtitle>
                                 </ListItem.Content>
                                 <ListItem.Chevron />

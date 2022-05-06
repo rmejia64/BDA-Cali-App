@@ -4,10 +4,11 @@ import ViewScreen from './pending/ViewScreen';
 import ListScreen from './pending/ListScreen';
 import AssignDriverScreen from './pending/AssignDriverScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { HeaderBackButton } from '@react-navigation/native';
 
 const Stack = createNativeStackNavigator();
 
-const PendingScreen = () => {
+const PendingScreen = ({ navigation }) => {
     return (
         <Stack.Navigator initialRouteName='List'>
             <Stack.Screen
@@ -18,7 +19,9 @@ const PendingScreen = () => {
             <Stack.Screen
                 name='View'
                 component={ViewScreen}
-                options={{ title: 'Donación Info' }}
+                options={{
+                    title: 'Donación Info',
+                }}
             />
             <Stack.Screen
                 name='AssignDriver'

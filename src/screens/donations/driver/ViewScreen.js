@@ -15,7 +15,7 @@ import {
 import React, { useEffect, useRef, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { Button, CheckBox } from 'react-native-elements';
-import { app, db, auth } from '../../../firebase/config';
+import { app, db } from '../../../firebase/config';
 import {
     deleteObject,
     getDownloadURL,
@@ -23,14 +23,7 @@ import {
     ref,
     uploadBytes,
 } from 'firebase/storage';
-import {
-    deleteDoc,
-    doc,
-    getDoc,
-    query,
-    setDoc,
-    updateDoc,
-} from 'firebase/firestore';
+import { deleteDoc, doc, setDoc, updateDoc } from 'firebase/firestore';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import { Formik } from 'formik';
@@ -229,7 +222,6 @@ const ViewScreen = ({ route, navigation }) => {
         };
 
         const handleClear = () => {
-            console.log('clear');
             ref.current.clearSignature();
         };
 

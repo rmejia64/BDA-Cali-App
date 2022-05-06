@@ -54,6 +54,7 @@ const LoginScreen = ({ navigation }) => {
                             return;
                         }
                         setLoading(false);
+                        navigation.replace('HomeScreen');
                     })
                     .catch((error) => {
                         alert(error);

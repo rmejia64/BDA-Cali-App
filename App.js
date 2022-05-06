@@ -1,7 +1,36 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Platform, LogBox } from 'react-native';
-import { Auth } from './src/auth/Auth';
-import UserState from './src/auth/UserState';
+import {
+    Platform,
+    LogBox,
+    StatusBar,
+    StyleSheet,
+    View,
+    Image,
+} from 'react-native';
+
+// Firebase
+import { onAuthStateChanged } from 'firebase/auth';
+import {
+    getDoc,
+    doc,
+    getDocs,
+    collection,
+    query,
+    where,
+} from 'firebase/firestore';
+import { auth, db } from './src/firebase/config';
+
+// Navigation
+import { NavigationContainer, StackActions } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import LoginHomeScreen from './src/screens/login/LoginHomeScreen';
+import HomeScreen from './src/screens/HomeScreen';
+
+// Redux
+import store from './src/redux/store';
+import { setUser, setDrivers } from './src/redux/userSlice';
+import { Provider } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 // Imports for notifications
 import * as Device from 'expo-device';
@@ -18,11 +47,17 @@ Notifications.setNotificationHandler({
     }),
 });
 
-export default function App() {
+const Stack = createNativeStackNavigator();
+
+function App() {
     const [expoPushToken, setExpoPushToken] = useState('');
     const [notification, setNotification] = useState(false);
+    const [loading, setLoading] = useState(true);
+
     const notificationListener = useRef();
     const responseListener = useRef();
+
+    const dispatch = useDispatch();
 
     async function registerForPushNotificationsAsync() {
         let token;
@@ -86,9 +121,89 @@ export default function App() {
         };
     }, []);
 
+    const saveDrivers = async () => {
+        let tempDrivers = [];
+
+        const users = collection(db, 'users');
+        const userQuery = query(users, where('type', '==', 'driver'));
+
+        try {
+            const querySnapshot = await getDocs(userQuery);
+            querySnapshot.forEach((doc) => {
+                tempDrivers.push({ uid: doc.id, data: doc.data() });
+            });
+            dispatch(setDrivers(tempDrivers));
+        } catch (error) {
+            console.error(error.message);
+        }
+    };
+
+    useEffect(() => {
+        let mounted = true;
+
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setLoading(true);
+                getDoc(doc(db, 'users', user.uid))
+                    .then((userSnap) => {
+                        if (mounted) {
+                            const userData = userSnap.data();
+                            if (
+                                userData.type === 'admin' ||
+                                userData.type === 'warehouse'
+                            ) {
+                                saveDrivers();
+                            }
+                            dispatch(setUser([user.uid, userData]));
+                        }
+                        setLoading(false);
+                    })
+                    .catch((error) => {
+                        setLoading(false);
+                    });
+            }
+        });
+        return unsubscribe;
+    }, [auth]);
+
+    // if (loading) {
+    //     return (
+    //         <View style={styles.container}>
+    //             <Image
+    //                 style={styles.logo}
+    //                 source={require('./assets/bdalogo.png')}
+    //             />
+    //         </View>
+    //     );
+    // }
+
     return (
-        <Auth>
-            <UserState />
-        </Auth>
+        <NavigationContainer>
+            {/* <StatusBar
+                barStyle={
+                    Platform.OS === 'ios' ? 'dark-content' : 'light-content'
+                }
+            /> */}
+            <Stack.Navigator initialRouteName='LoginHomeScreen'>
+                <Stack.Screen
+                    component={LoginHomeScreen}
+                    name='LoginHomeScreen'
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    component={HomeScreen}
+                    name='HomeScreen'
+                    options={{ headerShown: false }}
+                />
+            </Stack.Navigator>
+        </NavigationContainer>
+    );
+}
+
+export default function AppWrapper() {
+    return (
+        <Provider store={store}>
+            <App />
+        </Provider>
     );
 }

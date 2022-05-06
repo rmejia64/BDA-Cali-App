@@ -1,60 +1,32 @@
-import {
-    StyleSheet,
-    Text,
-    View,
-    ScrollView,
-    Platform,
-    ActivityIndicator,
-    Modal,
-} from 'react-native';
+import { StyleSheet, View, ScrollView, Platform } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { db } from '../../../firebase/config';
-import {
-    getDocs,
-    where,
-    query,
-    collection,
-    orderBy,
-    doc,
-    updateDoc,
-    getDoc,
-    deleteField,
-} from 'firebase/firestore';
-import { ListItem, SearchBar } from 'react-native-elements';
+import { doc, updateDoc, deleteField } from 'firebase/firestore';
+import { ListItem } from 'react-native-elements';
 import LoadingModal from '../../../../components/LoadingModal';
+import { useSelector } from 'react-redux';
 
 const AssignDriverScreen = ({ route, navigation }) => {
+    const drivers = useSelector((state) => state.user.drivers);
+
     const { id, driver } = route.params;
-    const [drivers, setDrivers] = useState([]);
-    const [search, setSearch] = useState('');
     const [checkBox, setCheckBox] = useState([]);
     const [loading, setLoading] = useState('false');
     const [loadingDriver, setLoadingDriver] = useState([]);
 
-    const updateSearch = (search) => {
-        setSearch(search);
-    };
-
     const getDrivers = async () => {
-        let tempDrivers = [];
         let tempCheckBox = [];
         let tempLoadingDrivers = [];
 
-        const users = collection(db, 'users');
-        const userQuery = query(users, where('type', '==', 'driver'));
-
         try {
-            const querySnapshot = await getDocs(userQuery);
-            querySnapshot.forEach((doc) => {
-                tempDrivers.push({ uid: doc.id, data: doc.data() });
+            drivers.forEach((d) => {
                 tempLoadingDrivers.push(false);
-                if (driver === doc.id) {
+                if (driver === d.uid) {
                     tempCheckBox.push(true);
                 } else {
                     tempCheckBox.push(false);
                 }
             });
-            setDrivers(tempDrivers);
             setCheckBox(tempCheckBox);
             setLoadingDriver(tempLoadingDrivers);
         } catch (error) {
@@ -108,12 +80,6 @@ const AssignDriverScreen = ({ route, navigation }) => {
     return (
         <View style={{ height: '100%' }}>
             <LoadingModal visible={loading} />
-            <SearchBar
-                placeholder='Buscar nombre...'
-                platform={Platform.OS}
-                value={search}
-                onChangeText={updateSearch}
-            />
             <ScrollView>
                 {drivers.map((driver, idx) => {
                     return (

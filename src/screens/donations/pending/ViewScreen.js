@@ -8,18 +8,10 @@ import {
     ActivityIndicator,
     Alert,
 } from 'react-native';
-import React, { useCallback, useEffect, useReducer, useState } from 'react';
-import {
-    collection,
-    deleteDoc,
-    doc,
-    getDoc,
-    query,
-    setDoc,
-    updateDoc,
-} from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
+import { deleteDoc, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../firebase/config';
-import { Button, ListItem } from 'react-native-elements';
+import { ListItem } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import LoadingModal from '../../../../components/LoadingModal';
@@ -36,13 +28,12 @@ const ViewScreen = ({ route, navigation }) => {
 
     const [driver, setDriver] = useState('');
     const [driverName, setDriverName] = useState('');
-    const [driverLoading, setDriverLoading] = useState(false);
     const [pickupDate, setPickupDate] = useState(formattedDate);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [modalType, setModalType] = useState('');
 
-    // date picker states
+    // date picker statesr
     const [dateOpen, setDateOpen] = useState(false);
 
     const acceptDonation = async () => {
@@ -61,7 +52,9 @@ const ViewScreen = ({ route, navigation }) => {
         setLoading(false);
 
         // automatically navigate back to list view
-        navigation.goBack();
+        navigation.navigate('List', {
+            refresh: true,
+        });
     };
 
     const deleteDonation = async () => {
@@ -73,13 +66,12 @@ const ViewScreen = ({ route, navigation }) => {
         await deleteDoc(doc(db, 'pending', id));
 
         // automatically navigate back to list view
-        navigation.goBack();
+        navigation.navigate('List', {
+            refresh: true,
+        });
     };
 
     const getDriverName = async () => {
-        setDriverLoading(true);
-        setLoading(true);
-
         const donationRef = doc(db, 'pending', id);
         const donationSnap = await getDoc(donationRef);
         const donation = donationSnap.data();
@@ -96,9 +88,6 @@ const ViewScreen = ({ route, navigation }) => {
                 setDriverName(donation.pickup.driverName);
             }
         }
-
-        setDriverLoading(false);
-        setLoading(false);
     };
 
     const handleDateConfirm = async (date) => {
@@ -114,59 +103,17 @@ const ViewScreen = ({ route, navigation }) => {
     };
 
     useEffect(() => {
-        getDriverName();
-    }, []);
-
-    useEffect(() => {
         navigation.addListener('focus', () => {
+            setLoading(true);
             getDriverName();
+            setLoading(false);
         });
     });
-
-    const DonationModal = () => {
-        const ModalContent = () => {
-            switch (modalType) {
-                case 'cert':
-                    return <Text>Certificate!</Text>;
-                case 'address':
-                    return <Text>Address</Text>;
-            }
-        };
-
-        return (
-            <View>
-                <Modal
-                    animationType='fade'
-                    transparent={true}
-                    visible={modalVisible}
-                    onRequestClose={() => {
-                        setModalVisible(false);
-                    }}
-                >
-                    <TouchableOpacity
-                        style={styles.modalContainer}
-                        activeOpacity={1}
-                        onPress={() => {
-                            setModalVisible(false);
-                        }}
-                    >
-                        <TouchableOpacity
-                            activeOpacity={1}
-                            style={styles.modalView}
-                        >
-                            <ModalContent />
-                        </TouchableOpacity>
-                    </TouchableOpacity>
-                </Modal>
-            </View>
-        );
-    };
 
     return (
         <View style={styles.container}>
             <LoadingModal visible={loading} />
             <ScrollView>
-                <DonationModal />
                 <ListItem topDivider bottomDivider>
                     <Icon name='calendar' size={25} />
                     <ListItem.Content>
@@ -176,13 +123,7 @@ const ViewScreen = ({ route, navigation }) => {
                         </ListItem.Subtitle>
                     </ListItem.Content>
                 </ListItem>
-                <ListItem
-                    bottomDivider
-                    onPress={() => {
-                        setModalType('cert');
-                        setModalVisible(true);
-                    }}
-                >
+                <ListItem bottomDivider>
                     <Icon name='certificate' size={25} />
                     <ListItem.Content>
                         <ListItem.Title>¿Certificado requerido?</ListItem.Title>
@@ -190,7 +131,6 @@ const ViewScreen = ({ route, navigation }) => {
                             {data.donation.taxDeduction ? 'Sí' : 'No'}
                         </ListItem.Subtitle>
                     </ListItem.Content>
-                    <ListItem.Chevron />
                 </ListItem>
                 <ListItem
                     bottomDivider
@@ -210,9 +150,7 @@ const ViewScreen = ({ route, navigation }) => {
                         >
                             Conductor
                         </ListItem.Title>
-                        <ListItem.Subtitle>
-                            {driverLoading ? <ActivityIndicator /> : driverName}
-                        </ListItem.Subtitle>
+                        <ListItem.Subtitle>{driverName}</ListItem.Subtitle>
                     </ListItem.Content>
                     <ListItem.Chevron />
                 </ListItem>
@@ -272,20 +210,13 @@ const ViewScreen = ({ route, navigation }) => {
                         </ListItem.Subtitle>
                     </ListItem.Content>
                 </ListItem>
-                <ListItem
-                    bottomDivider
-                    onPress={() => {
-                        setModalType('address');
-                        setModalVisible(true);
-                    }}
-                >
+                <ListItem bottomDivider>
                     <ListItem.Content>
                         <ListItem.Title>Dirección</ListItem.Title>
                         <ListItem.Subtitle>
                             {`${data.client.address.street}\n${data.client.address.city}, ${data.client.address.region}`}
                         </ListItem.Subtitle>
                     </ListItem.Content>
-                    <ListItem.Chevron />
                 </ListItem>
 
                 <ListItem

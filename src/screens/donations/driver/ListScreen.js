@@ -7,24 +7,23 @@ import {
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { db } from '../../../firebase/config';
-import { AuthContext } from '../../../auth/Auth';
 import { getDocs, query, collection, where } from 'firebase/firestore';
 import { ListItem } from 'react-native-elements';
+import { useSelector } from 'react-redux';
 
 const ListScreen = ({ route, navigation }) => {
-    let [user] = useState(AuthContext);
-    user = user._currentValue.user;
+    const id = useSelector((state) => state.user.id);
 
     const [refreshing, setRefreshing] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
     const [pickups, setPickups] = useState([]);
 
-    const getAssignedPickups = async (refresh) => {
+    const getAssignedPickups = async () => {
         let tempPickups = [];
         let q;
 
         const accepted = collection(db, 'accepted');
-        q = query(accepted, where('pickup.driver', '==', user.id));
+        q = query(accepted, where('pickup.driver', '==', id));
 
         try {
             const querySnapshot = await getDocs(q);
@@ -43,7 +42,7 @@ const ListScreen = ({ route, navigation }) => {
 
     const formatName = (indiv) => {
         return `${indiv.name.first} ${indiv.name.last1}${
-            indiv.name.last2 !== null ? indiv.name.last2 : ''
+            indiv.name.last2 !== null ? ` ${indiv.name.last2}` : ''
         }`;
     };
 
@@ -88,7 +87,7 @@ const ListScreen = ({ route, navigation }) => {
                 const id = pickup.id;
                 const address = formatAddress(data.client.address);
                 const name =
-                    data.type === 'indiv'
+                    data.indiv !== undefined
                         ? formatName(data.indiv)
                         : data.org.name;
                 return (

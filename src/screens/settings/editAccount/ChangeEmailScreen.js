@@ -53,18 +53,18 @@ const ChangeEmailScreen = ({ route, navigation }) => {
         if (email === '') return null;
 
         Alert.alert(
-            'Confirm',
-            'Are you sure you want to change your email to ' + email + '?',
+            'Confirmar',
+            '¿Está seguro de que desea cambiar su correo electrónico a ' +
+                email +
+                '?',
             [
                 {
-                    text: 'Cancel',
-                    onPress: () => {
-                        return null;
-                    },
+                    text: 'Cancelar',
+                    onPress: () => {},
                     style: 'cancel',
                 },
                 {
-                    text: 'Yes',
+                    text: 'Entregar',
                     onPress: () => {
                         update();
                     },

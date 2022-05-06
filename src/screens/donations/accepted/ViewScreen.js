@@ -1,18 +1,10 @@
-import {
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-    Alert,
-    ScrollView,
-} from 'react-native';
+import { StyleSheet, Text, View, Alert, ScrollView } from 'react-native';
 import React, { useState } from 'react';
 import { deleteDoc, doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../../firebase/config';
 import LoadingModal from '../../../../components/LoadingModal';
 import { ListItem } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import DateTimePicker from 'react-native-modal-datetime-picker';
 
 const ViewScreen = ({ route, navigation }) => {
     const data = route.params.data;
@@ -32,13 +24,15 @@ const ViewScreen = ({ route, navigation }) => {
         await deleteDoc(doc(db, 'accepted', id));
 
         setLoading(false);
-        navigation.goBack();
+        navigation.navigate('List', {
+            refresh: true,
+        });
     };
 
     return (
         <View>
             <LoadingModal visible={loading} />
-            <ScrollView>
+            <ScrollView style={{ height: '100%' }}>
                 <ListItem topDivider bottomDivider>
                     <Icon name='truck' size={25} />
                     <ListItem.Content>

@@ -1,25 +1,22 @@
 import { StyleSheet } from 'react-native';
 import React, { useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { AuthContext } from '../auth/Auth';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import PendingScreen from './donations/PendingScreen';
 import AcceptedScreen from './donations/AcceptedScreen';
 import SettingsScreen from './settings/SettingsScreen';
 import PickupScreen from './donations/PickupScreen';
 import PickedupScreen from './donations/PickedupScreen';
+import { useSelector } from 'react-redux';
 
 const Tab = createBottomTabNavigator();
 
 const HomeScreen = () => {
-    let [user] = useState(AuthContext);
-    user = user._currentValue.user;
+    const data = useSelector((state) => state.user.data);
 
     return (
         <Tab.Navigator
-            initialRouteName={
-                user.data.type === 'driver' ? 'Recoger' : 'Pendiente'
-            }
+            initialRouteName={data.type === 'driver' ? 'Recoger' : 'Pendiente'}
             screenOptions={({ route }) => ({
                 tabBarIcon: ({ focused, color, size }) => {
                     let iconName;
@@ -43,7 +40,7 @@ const HomeScreen = () => {
                 headerShown: false,
             })}
         >
-            {user.data.type === 'driver' ? (
+            {data.type === 'driver' ? (
                 <Tab.Screen name='Recoger' component={PickupScreen} />
             ) : (
                 <>
@@ -58,11 +55,3 @@ const HomeScreen = () => {
 };
 
 export default HomeScreen;
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-});
