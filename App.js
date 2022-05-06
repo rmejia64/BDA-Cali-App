@@ -136,7 +136,6 @@ function App() {
         let mounted = true;
 
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            console.log('auth state changed');
             if (user) {
                 setLoading(true);
                 getDoc(doc(db, 'users', user.uid))
