@@ -13,7 +13,6 @@ const SettingsScreen = ({ navigation }) => {
         signOut(auth)
             .then(() => {
                 // sign-out successful
-                navigation.replace('LoginHomeScreen');
             })
             .catch((error) => console.error(error.message));
     };

@@ -1,12 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-    Platform,
-    LogBox,
-    StatusBar,
-    StyleSheet,
-    View,
-    Image,
-} from 'react-native';
+import { Platform, LogBox, StyleSheet, View, Image } from 'react-native';
 
 // Firebase
 import { onAuthStateChanged } from 'firebase/auth';
@@ -52,7 +45,8 @@ const Stack = createNativeStackNavigator();
 function App() {
     const [expoPushToken, setExpoPushToken] = useState('');
     const [notification, setNotification] = useState(false);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [loggedIn, setLoggedIn] = useState(false);
 
     const notificationListener = useRef();
     const responseListener = useRef();
@@ -142,6 +136,7 @@ function App() {
         let mounted = true;
 
         const unsubscribe = onAuthStateChanged(auth, (user) => {
+            console.log('auth state changed');
             if (user) {
                 setLoading(true);
                 getDoc(doc(db, 'users', user.uid))
@@ -155,47 +150,38 @@ function App() {
                                 saveDrivers();
                             }
                             dispatch(setUser([user.uid, userData]));
+                            setLoggedIn(true);
                         }
-                        setLoading(false);
                     })
                     .catch((error) => {
+                        console.error(error);
+                    })
+                    .finally(() => {
                         setLoading(false);
                     });
+            } else {
+                if (mounted) {
+                    setLoggedIn(false);
+                }
             }
         });
         return unsubscribe;
     }, [auth]);
 
-    // if (loading) {
-    //     return (
-    //         <View style={styles.container}>
-    //             <Image
-    //                 style={styles.logo}
-    //                 source={require('./assets/bdalogo.png')}
-    //             />
-    //         </View>
-    //     );
-    // }
+    if (loading) {
+        return (
+            <View style={styles.container}>
+                <Image
+                    style={styles.logo}
+                    source={require('./assets/bdalogo.png')}
+                />
+            </View>
+        );
+    }
 
     return (
         <NavigationContainer>
-            {/* <StatusBar
-                barStyle={
-                    Platform.OS === 'ios' ? 'dark-content' : 'light-content'
-                }
-            /> */}
-            <Stack.Navigator initialRouteName='LoginHomeScreen'>
-                <Stack.Screen
-                    component={LoginHomeScreen}
-                    name='LoginHomeScreen'
-                    options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                    component={HomeScreen}
-                    name='HomeScreen'
-                    options={{ headerShown: false }}
-                />
-            </Stack.Navigator>
+            {loggedIn ? <HomeScreen /> : <LoginHomeScreen />}
         </NavigationContainer>
     );
 }
@@ -207,3 +193,15 @@ export default function AppWrapper() {
         </Provider>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    logo: {
+        width: 170,
+        height: 175,
+    },
+});

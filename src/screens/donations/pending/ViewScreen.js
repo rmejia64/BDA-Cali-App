@@ -223,7 +223,25 @@ const ViewScreen = ({ route, navigation }) => {
                     topDivider
                     bottomDivider
                     style={{ marginTop: 32, marginBottom: 32 }}
-                    onPress={() => deleteDonation()}
+                    onPress={() => {
+                        Alert.alert(
+                            'Confirmar',
+                            '¿Está seguro de que desea eliminar esta donación? Esto no se puede deshacer.',
+                            [
+                                {
+                                    text: 'Cancelar',
+                                    onPress: () => {},
+                                    style: 'cancel',
+                                },
+                                {
+                                    text: 'Borrar',
+                                    onPress: () => {
+                                        deleteDonation();
+                                    },
+                                },
+                            ]
+                        );
+                    }}
                 >
                     <Icon name='delete' color='#df0b37' size={25} />
                     <ListItem.Content>

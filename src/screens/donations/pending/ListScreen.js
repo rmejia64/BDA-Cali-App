@@ -20,7 +20,6 @@ const ListScreen = ({ route, navigation }) => {
     const [statusFilter, setStatusFilter] = useState('all');
     const [tempStatusFilter, setTempStatusFilter] = useState('all');
     const [filterModalVisible, setFilterModalVisible] = useState(false);
-    const [filters, setFilters] = useState(['newest', 'all']);
 
     const filterTranslations = {
         all: 'Todos',

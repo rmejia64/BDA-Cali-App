@@ -242,38 +242,46 @@ const ViewScreen = ({ route, navigation }) => {
                 />
                 <View
                     style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        marginBottom: 24,
+                        height: '23%',
+                        justifyContent: 'center',
+                        borderTopWidth: 1,
+                        borderTopColor: '#dbdbdb',
                     }}
                 >
-                    <Button
-                        title='Cancelar'
-                        icon={{
-                            name: 'arrow-left',
-                            type: 'material-community',
-                            color: 'white',
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
                         }}
-                        buttonStyle={{
-                            backgroundColor: '#df0b37',
-                            marginLeft: 40,
-                        }}
-                        onPress={handleCancel}
-                    />
-                    <View style={{ flexDirection: 'row' }}>
+                    >
                         <Button
-                            title='Limpiar'
-                            onPress={handleClear}
-                            buttonStyle={{
-                                backgroundColor: 'grey',
-                                marginRight: 20,
+                            title='Cancelar'
+                            icon={{
+                                name: 'arrow-left',
+                                type: 'material-community',
+                                color: 'white',
                             }}
+                            buttonStyle={{
+                                backgroundColor: '#df0b37',
+                                marginLeft: 40,
+                            }}
+                            onPress={handleCancel}
                         />
-                        <Button
-                            title='Entregar'
-                            onPress={handleConfirm}
-                            buttonStyle={{ marginRight: 40 }}
-                        />
+                        <View style={{ flexDirection: 'row' }}>
+                            <Button
+                                title='Limpiar'
+                                onPress={handleClear}
+                                buttonStyle={{
+                                    backgroundColor: 'grey',
+                                    marginRight: 20,
+                                }}
+                            />
+                            <Button
+                                title='Entregar'
+                                onPress={handleConfirm}
+                                buttonStyle={{ marginRight: 40 }}
+                            />
+                        </View>
                     </View>
                 </View>
             </Modal>
@@ -313,9 +321,6 @@ const ViewScreen = ({ route, navigation }) => {
                 validateOnBlur={false}
                 validate={(values) => {
                     const errors = {};
-                    if (signature === null) {
-                        errors.signature = 'Firma del donante';
-                    }
                     if (hasReceipt === 'no' && !values.noReceiptReason) {
                         errors.noReceiptReason = 'Falta el motivo del recibo';
                     }
@@ -353,55 +358,6 @@ const ViewScreen = ({ route, navigation }) => {
                         }}
                     >
                         <ScrollView>
-                            <View style={{ alignItems: 'center' }}>
-                                <Text style={styles.header}>
-                                    Firma del donante{' '}
-                                    <Text style={{ color: 'red' }}>*</Text>
-                                </Text>
-                                {signature !== null && (
-                                    <TouchableOpacity
-                                        style={{
-                                            width: '70%',
-                                            height: 100,
-                                            marginBottom: 24,
-                                            backgroundColor: 'white',
-                                            borderRadius: 5,
-                                            borderWidth: 2,
-                                            borderColor: '#0074cb',
-                                        }}
-                                        onPress={() => {
-                                            setSignatureVisible(true);
-                                            ScreenOrientation.lockAsync(
-                                                ScreenOrientation
-                                                    .OrientationLock
-                                                    .LANDSCAPE_RIGHT
-                                            );
-                                        }}
-                                    >
-                                        <Image
-                                            source={{ uri: signature }}
-                                            style={styles.signatureBox}
-                                        />
-                                    </TouchableOpacity>
-                                )}
-                                <View style={{ width: '50%' }}>
-                                    <Button
-                                        title='Pantalla abierta'
-                                        onPress={() => {
-                                            setSignatureVisible(true);
-                                            ScreenOrientation.lockAsync(
-                                                ScreenOrientation
-                                                    .OrientationLock
-                                                    .LANDSCAPE_RIGHT
-                                            );
-                                        }}
-                                        buttonStyle={
-                                            errors.signature &&
-                                            styles.buttonError
-                                        }
-                                    />
-                                </View>
-                            </View>
                             <View>
                                 <Text style={styles.header}>
                                     El donante tiene recibo?{' '}
@@ -452,7 +408,6 @@ const ViewScreen = ({ route, navigation }) => {
                                                 flexDirection: 'row',
                                                 justifyContent: 'space-evenly',
                                                 marginTop: 15,
-                                                marginBottom: 24,
                                             }}
                                         >
                                             <View style={{ width: '35%' }}>
@@ -495,7 +450,6 @@ const ViewScreen = ({ route, navigation }) => {
                                     <View
                                         style={{
                                             marginTop: 18,
-                                            marginBottom: 24,
                                             alignItems: 'center',
                                         }}
                                     >
@@ -530,6 +484,64 @@ const ViewScreen = ({ route, navigation }) => {
                                         </View>
                                     </View>
                                 )}
+                            </View>
+                            <View
+                                style={{
+                                    width: '90%',
+                                    borderWidth: 1,
+                                    borderColor: 'rgba(0, 0, 0, 0.15)',
+                                    marginHorizontal: '5%',
+                                    marginTop: 32,
+                                }}
+                            />
+                            <View
+                                style={{
+                                    alignItems: 'center',
+                                    marginBottom: 32,
+                                }}
+                            >
+                                <Text style={styles.header}>
+                                    Firma del donante
+                                </Text>
+                                {signature !== null && (
+                                    <TouchableOpacity
+                                        style={{
+                                            width: '70%',
+                                            height: 100,
+                                            marginBottom: 24,
+                                            backgroundColor: 'white',
+                                            borderRadius: 5,
+                                            borderWidth: 2,
+                                            borderColor: '#0074cb',
+                                        }}
+                                        onPress={() => {
+                                            setSignatureVisible(true);
+                                            ScreenOrientation.lockAsync(
+                                                ScreenOrientation
+                                                    .OrientationLock
+                                                    .LANDSCAPE_RIGHT
+                                            );
+                                        }}
+                                    >
+                                        <Image
+                                            source={{ uri: signature }}
+                                            style={styles.signatureBox}
+                                        />
+                                    </TouchableOpacity>
+                                )}
+                                <View style={{ width: '50%' }}>
+                                    <Button
+                                        title='Pantalla abierta'
+                                        onPress={() => {
+                                            setSignatureVisible(true);
+                                            ScreenOrientation.lockAsync(
+                                                ScreenOrientation
+                                                    .OrientationLock
+                                                    .LANDSCAPE_RIGHT
+                                            );
+                                        }}
+                                    />
+                                </View>
                             </View>
                         </ScrollView>
                         <TouchableOpacity

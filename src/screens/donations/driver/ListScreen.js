@@ -7,7 +7,13 @@ import {
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { db } from '../../../firebase/config';
-import { getDocs, query, collection, where } from 'firebase/firestore';
+import {
+    getDocs,
+    query,
+    collection,
+    where,
+    Timestamp,
+} from 'firebase/firestore';
 import { ListItem } from 'react-native-elements';
 import { useSelector } from 'react-redux';
 
@@ -22,8 +28,19 @@ const ListScreen = ({ route, navigation }) => {
         let tempPickups = [];
         let q;
 
+        let today = new Date();
+        let start = new Date(today.setHours(0, 0, 0, 0));
+        let end = new Date(today.setHours(23, 59, 59, 999));
+        let dateStart = Timestamp.fromDate(start);
+        let dateEnd = Timestamp.fromDate(end);
+
         const accepted = collection(db, 'accepted');
-        q = query(accepted, where('pickup.driver', '==', id));
+        q = query(
+            accepted,
+            where('pickup.driver', '==', id),
+            where('pickup.date', '>=', dateStart),
+            where('pickup.date', '<=', dateEnd)
+        );
 
         try {
             const querySnapshot = await getDocs(q);
