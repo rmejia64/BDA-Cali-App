@@ -24,11 +24,10 @@ import { useSelector } from 'react-redux';
 const ListScreen = ({ route, navigation }) => {
     const drivers = useSelector((state) => state.user.drivers);
     const [refreshing, setRefreshing] = useState(false);
-    const [refreshKey, setRefreshKey] = useState(0);
     const [donations, setDonations] = useState([]);
     const [dateModalOpen, setDateModalOpen] = useState(false);
     const [dateFilter, setDateFilter] = useState(null);
-    const [dateFilterOpen, setDateFilterOpen] = useState(false);
+    const [dateSelectOpen, setDateSelectOpen] = useState(false);
     const [formattedDate, setFormattedDate] = useState('');
     const [driverFilter, setDriverFilter] = useState(null);
     const [driverFilterName, setDriverFilterName] = useState('');
@@ -240,7 +239,7 @@ const ListScreen = ({ route, navigation }) => {
                             }}
                             onPress={() => {
                                 setDateModalOpen(false);
-                                setDateFilterOpen(true);
+                                setDateSelectOpen(true);
                             }}
                         >
                             <Text
@@ -268,22 +267,22 @@ const ListScreen = ({ route, navigation }) => {
 
     useEffect(() => {
         getAcceptedDonations(driverFilter, dateFilter);
-    }, [refreshKey]);
+    }, []);
 
     return (
         <>
             <SelectDriverModal />
             <DatePickerModal />
             <DateTimePicker
-                isVisible={dateFilterOpen}
+                isVisible={dateSelectOpen}
                 mode='date'
                 onConfirm={(date) => {
-                    setDateFilterOpen(false);
+                    setDateSelectOpen(false);
                     setDateFilter(date);
                     setFormattedDate(date.toLocaleDateString('es-CO'));
                     getAcceptedDonations(driverFilter, date);
                 }}
-                onCancel={() => setDateFilterOpen(false)}
+                onCancel={() => setDateSelectOpen(false)}
                 isDarkModeEnabled={false}
             />
             <View
@@ -356,16 +355,24 @@ const ListScreen = ({ route, navigation }) => {
                     />
                 }
             >
-                {donations.length === 0 && (
+                {donations.length === 0 && !refreshing && (
                     <View style={styles.noDonations}>
                         <Text
                             style={{
                                 fontWeight: '400',
                                 fontSize: 24,
                                 color: '#626b79',
+                                textAlign: 'center',
+                                width: '80%',
                             }}
                         >
-                            Sin nuevas donaciones.
+                            {driverFilter === null && dateFilter === null
+                                ? 'No hay donaciones que se estén recogiendo.'
+                                : driverFilter === null && dateFilter !== null
+                                ? `No hay donaciones que se estén recogiendo el ${formattedDate}.`
+                                : driverFilter !== null && dateFilter === null
+                                ? `${driverFilterName} no está recolectando donaciones.`
+                                : `${driverFilterName} no está recolectando donaciones el ${formattedDate}.`}
                         </Text>
                     </View>
                 )}
@@ -432,6 +439,7 @@ const ListScreen = ({ route, navigation }) => {
                                                 flexDirection: 'row',
                                                 width: '50%',
                                                 alignItems: 'center',
+                                                marginLeft: 12,
                                             }}
                                         >
                                             <Icon name='calendar' size={25} />

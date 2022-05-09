@@ -250,7 +250,7 @@ const ListScreen = ({ route, navigation }) => {
                     />
                 }
             >
-                {donations.length === 0 && (
+                {donations.length === 0 && !refreshing && (
                     <View style={styles.noDonations}>
                         <Text
                             style={{

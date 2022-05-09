@@ -20,7 +20,7 @@ const HomeScreen = () => {
             screenOptions={({ route }) => ({
                 tabBarIcon: ({ focused, color, size }) => {
                     let iconName;
-                    if (route.name === 'Recoger') {
+                    if (route.name === 'Recogidas') {
                         iconName = focused ? 'truck' : 'truck-outline';
                     } else if (route.name === 'Pendiente') {
                         iconName = focused
@@ -41,7 +41,7 @@ const HomeScreen = () => {
             })}
         >
             {data.type === 'driver' ? (
-                <Tab.Screen name='Recoger' component={PickupScreen} />
+                <Tab.Screen name='Recogidas' component={PickupScreen} />
             ) : (
                 <>
                     <Tab.Screen name='Pendiente' component={PendingScreen} />

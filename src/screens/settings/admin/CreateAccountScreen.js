@@ -99,7 +99,7 @@ const CreateAccountScreen = () => {
 
     function CreateButton() {
         if (isLoading) {
-            return <ActivityIndicator />;
+            return <ActivityIndicator color='white' />;
         } else {
             return <Text style={styles.buttonText}>Crear</Text>;
         }
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
         marginBottom: 15,
     },
     button: {
-        backgroundColor: '#0c4484',
+        backgroundColor: '#0074cb',
         width: '80%',
         marginTop: 30,
         padding: 15,

@@ -4,82 +4,91 @@ import {
     ScrollView,
     RefreshControl,
     Modal,
+    TouchableOpacity,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { db } from '../../../firebase/config';
 import {
     collection,
-    getDoc,
     getDocs,
     orderBy,
     query,
-    doc,
+    Timestamp,
+    where,
 } from 'firebase/firestore';
 import { Text, Chip, ListItem, Button, CheckBox } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import DateTimePicker from 'react-native-modal-datetime-picker';
+import { useSelector } from 'react-redux';
 
-const ListScreen = ({ navigation }) => {
+const ListScreen = ({ route, navigation }) => {
+    const drivers = useSelector((state) => state.user.drivers);
     const [refreshing, setRefreshing] = useState(false);
-    const [refreshKey, setRefreshKey] = useState(0);
     const [donations, setDonations] = useState([]);
-    const [dateFilter, setDateFilter] = useState('newest');
-    const [tempDateFilter, setTempDateFilter] = useState('newest');
-    const [statusFilter, setStatusFilter] = useState('all');
-    const [tempStatusFilter, setTempStatusFilter] = useState('all');
-    const [filterModalVisible, setFilterModalVisible] = useState(false);
 
-    const filterTranslations = {
-        all: 'Todos',
-        ready: 'Listos',
-        notready: 'No Listos',
-        newest: 'Más nuevo',
-        oldest: 'Más viejo',
-    };
+    // driver filter states
+    const [driverFilter, setDriverFilter] = useState(null);
+    const [driverFilterName, setDriverFilterName] = useState('');
+    const [driverModal, setDriverModal] = useState(false);
+
+    // date filter states
+    const [dateFilter, setDateFilter] = useState(new Date());
+    const [dateModal, setDateModal] = useState(false);
+    const [dateSelectOpen, setDateSelectOpen] = useState(false);
+    const [formattedDate, setFormattedDate] = useState(
+        new Date().toLocaleDateString('es-CO')
+    );
 
     // grab all documents in donationForms collection from firebase
-    const getAcceptedDonations = async () => {
+    const getPickedupDonations = async (id = null, date = null) => {
         setRefreshing(true);
         let forms = [];
-        let q;
+        let q, dateStart, dateEnd;
+        let specificDateQuery = false;
         const donations = collection(db, 'pickedup');
 
-        if (dateFilter === 'newest') {
-            q = query(donations, orderBy('dateCreated', 'desc'));
-        } else if (dateFilter === 'oldest') {
-            q = query(donations, orderBy('dateCreated', 'asc'));
+        if (date !== null) {
+            specificDateQuery = true;
+            date = date === null ? new Date() : date;
+            let start = new Date(date.setHours(0, 0, 0, 0));
+            let end = new Date(date.setHours(23, 59, 59, 999));
+            dateStart = Timestamp.fromDate(start);
+            dateEnd = Timestamp.fromDate(end);
+        }
+
+        if (id === null && !specificDateQuery) {
+            q = query(donations, orderBy('pickup.date'));
+        } else if (id !== null && !specificDateQuery) {
+            q = query(
+                donations,
+                orderBy('pickup.date'),
+                where('pickup.driver', '==', id)
+            );
+        } else if (id === null && specificDateQuery) {
+            q = query(
+                donations,
+                orderBy('pickup.date'),
+                where('pickup.date', '>=', dateStart),
+                where('pickup.date', '<=', dateEnd)
+            );
+        } else {
+            q = query(
+                donations,
+                orderBy('pickup.date'),
+                where('pickup.driver', '==', id),
+                where('pickup.date', '>=', dateStart),
+                where('pickup.date', '<=', dateEnd)
+            );
         }
 
         try {
             const querySnapshot = await getDocs(q);
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                const ready =
-                    data.pickup === undefined
-                        ? false
-                        : !(
-                              data.pickup.driver === undefined ||
-                              data.pickup.date === undefined
-                          );
-                if (statusFilter === 'all') {
-                    forms.push({
-                        id: doc.id,
-                        data: data,
-                    });
-                } else if (statusFilter === 'ready') {
-                    if (ready) {
-                        forms.push({
-                            id: doc.id,
-                            data: data,
-                        });
-                    }
-                } else if (statusFilter === 'notready') {
-                    if (!ready) {
-                        forms.push({
-                            id: doc.id,
-                            data: data,
-                        });
-                    }
-                }
+                forms.push({
+                    id: doc.id,
+                    data: data,
+                });
             });
             setDonations(forms);
         } catch (error) {
@@ -89,144 +98,242 @@ const ListScreen = ({ navigation }) => {
         setRefreshing(false);
     };
 
-    const getAge = (date) => {
-        const difference = new Date().getTime() - date.getTime();
-        const result = Math.round(difference) / (1000 * 3600 * 24);
-        return result < 1 ? 'New' : result.toFixed(0) + ' days old';
-    };
-
-    // useEffect(() => {
-    //     // refresh will trigger when the list screen is focused
-    //     navigation.addListener('focus', () => {
-    //         getAcceptedDonations();
-    //     });
-    // });
+    useEffect(() => {
+        if (route.params !== undefined && route.params.refresh) {
+            getPickedupDonations(driverFilter, dateFilter);
+        }
+    }, [route.params]);
 
     useEffect(() => {
-        getAcceptedDonations();
-    }, [refreshKey]);
+        getPickedupDonations(driverFilter, dateFilter);
+    }, []);
 
-    return (
-        <>
-            <Modal
-                visible={filterModalVisible}
-                animationType='fade'
-                transparent
-            >
-                <View style={styles.filterContainer}>
-                    <View style={styles.filterBox}>
+    const SelectDriverModal = () => {
+        return (
+            <Modal visible={driverModal}>
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalBox}>
                         <View style={{ alignItems: 'flex-end' }}>
                             <Icon
                                 name='close'
                                 color='#626b79'
-                                size={20}
+                                size={30}
                                 onPress={() => {
-                                    setTempDateFilter(dateFilter);
-                                    setTempStatusFilter(statusFilter);
-                                    setFilterModalVisible(false);
+                                    setDriverModal(false);
                                 }}
                             />
                         </View>
-                        <View>
-                            <Text style={styles.filterHeading}>
-                                Fecha de realización
-                            </Text>
-                            <CheckBox
-                                title='Más nuevo'
-                                checked={tempDateFilter === 'newest'}
-                                iconType='material-community'
-                                checkedIcon='radiobox-marked'
-                                uncheckedIcon='radiobox-blank'
-                                checkedColor='#0074cb'
-                                onPress={() => setTempDateFilter('newest')}
-                            />
-                            <CheckBox
-                                title='Más viejo'
-                                checked={tempDateFilter === 'oldest'}
-                                iconType='material-community'
-                                checkedIcon='radiobox-marked'
-                                uncheckedIcon='radiobox-blank'
-                                checkedColor='#0074cb'
-                                onPress={() => setTempDateFilter('oldest')}
-                            />
-                        </View>
-                        <View
+                        <Text
                             style={{
-                                borderBottomColor: 'rgba(0, 0, 0, 0.15)',
-                                borderBottomWidth: 1,
-                                marginVertical: 20,
-                            }}
-                        />
-                        <View>
-                            <Text style={styles.filterHeading}>Estado</Text>
-                            <CheckBox
-                                title='Listo'
-                                checked={tempStatusFilter === 'ready'}
-                                iconType='material-community'
-                                checkedIcon='radiobox-marked'
-                                uncheckedIcon='radiobox-blank'
-                                checkedColor='#0074cb'
-                                onPress={() => setTempStatusFilter('ready')}
-                            />
-                            <CheckBox
-                                title='No Listo'
-                                checked={tempStatusFilter === 'notready'}
-                                iconType='material-community'
-                                checkedIcon='radiobox-marked'
-                                uncheckedIcon='radiobox-blank'
-                                checkedColor='#0074cb'
-                                onPress={() => setTempStatusFilter('notready')}
-                            />
-                            <CheckBox
-                                title='Todos'
-                                checked={tempStatusFilter === 'all'}
-                                iconType='material-community'
-                                checkedIcon='radiobox-marked'
-                                uncheckedIcon='radiobox-blank'
-                                checkedColor='#0074cb'
-                                onPress={() => setTempStatusFilter('all')}
-                            />
-                        </View>
-                        <View
-                            style={{
-                                borderBottomColor: 'rgba(0, 0, 0, 0.15)',
-                                borderBottomWidth: 1,
-                                marginVertical: 20,
-                            }}
-                        />
-                        <View
-                            style={{
-                                alignItems: 'center',
-                                marginBottom: 20,
+                                fontSize: 24,
+                                fontWeight: '500',
+                                marginBottom: 24,
                             }}
                         >
-                            <Button
-                                title='Filtrar'
-                                onPress={() => {
-                                    setStatusFilter(tempStatusFilter);
-                                    setDateFilter(tempDateFilter);
-                                    setFilterModalVisible(false);
-                                    setRefreshKey((oldKey) => oldKey + 1);
-                                }}
-                                containerStyle={{ width: '92%' }}
-                            />
-                        </View>
+                            Selecciona un conductor
+                        </Text>
+                        {drivers.length === 0 ? (
+                            <Text>No hay controladores disponibles.</Text>
+                        ) : (
+                            <>
+                                <TouchableOpacity
+                                    style={{
+                                        backgroundColor: '#0074cb',
+                                        borderRadius: 5,
+                                        marginBottom: 24,
+                                    }}
+                                    onPress={() => {
+                                        setDriverFilter(null);
+                                        setDriverModal(false);
+                                        getPickedupDonations(null, dateFilter);
+                                    }}
+                                >
+                                    <Text
+                                        style={{
+                                            textAlign: 'center',
+                                            fontSize: 18,
+                                            color: 'white',
+                                            margin: 10,
+                                        }}
+                                    >
+                                        Obtener todos controladores
+                                    </Text>
+                                </TouchableOpacity>
+                                <ScrollView>
+                                    {drivers.map((driver, idx) => {
+                                        const data = driver.data;
+                                        const id = driver.uid;
+                                        const name = `${data.name.first} ${
+                                            data.name.last1
+                                        }${
+                                            data.name.last2 === null
+                                                ? ''
+                                                : ` ${data.name.last2}`
+                                        }`;
+
+                                        return (
+                                            <ListItem
+                                                topDivider={idx === 0}
+                                                bottomDivider
+                                                key={id}
+                                                onPress={() => {
+                                                    setDriverFilter(id);
+                                                    setDriverFilterName(name);
+                                                    getPickedupDonations(
+                                                        id,
+                                                        dateFilter
+                                                    );
+                                                    setDriverModal(false);
+                                                }}
+                                            >
+                                                <ListItem.Content>
+                                                    <ListItem.Title>
+                                                        {name}
+                                                    </ListItem.Title>
+                                                </ListItem.Content>
+                                            </ListItem>
+                                        );
+                                    })}
+                                </ScrollView>
+                            </>
+                        )}
                     </View>
                 </View>
             </Modal>
+        );
+    };
+
+    const DatePickerModal = () => {
+        return (
+            <Modal visible={dateModal}>
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalBox}>
+                        <View style={{ alignItems: 'flex-end' }}>
+                            <Icon
+                                name='close'
+                                color='#626b79'
+                                size={30}
+                                onPress={() => {
+                                    setDateModal(false);
+                                }}
+                            />
+                        </View>
+                        <Text
+                            style={{
+                                fontSize: 24,
+                                fontWeight: '500',
+                                marginBottom: 24,
+                            }}
+                        >
+                            Fecha de recogida
+                        </Text>
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: '#0074cb',
+                                borderRadius: 5,
+                                marginBottom: 24,
+                            }}
+                            onPress={() => {
+                                setDateFilter(null);
+                                setDateModal(false);
+                                getPickedupDonations(driverFilter, null);
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    textAlign: 'center',
+                                    fontSize: 18,
+                                    color: 'white',
+                                    margin: 10,
+                                }}
+                            >
+                                Obtener todas fechas
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: '#6bb7fb',
+                                borderRadius: 5,
+                                marginBottom: 24,
+                            }}
+                            onPress={() => {
+                                setDateModal(false);
+                                setDateSelectOpen(true);
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    textAlign: 'center',
+                                    fontSize: 18,
+                                    color: 'white',
+                                    margin: 10,
+                                }}
+                            >
+                                Seleccionar fecha especifica
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+        );
+    };
+
+    return (
+        <>
+            <SelectDriverModal />
+            <DatePickerModal />
+            <DateTimePicker
+                isVisible={dateSelectOpen}
+                mode='date'
+                onConfirm={(date) => {
+                    setDateSelectOpen(false);
+                    setDateFilter(date);
+                    setFormattedDate(date.toLocaleDateString('es-CO'));
+                    getPickedupDonations(driverFilter, date);
+                }}
+                onCancel={() => setDateSelectOpen(false)}
+                isDarkModeEnabled={false}
+            />
             <View
                 style={{
                     backgroundColor: 'white',
-                    height: '8%',
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     paddingRight: 10,
                 }}
             >
-                <View style={{ flexDirection: 'row' }}>
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        marginVertical: 10,
+                    }}
+                >
                     <Chip
-                        title={filterTranslations[dateFilter]}
+                        title={
+                            driverFilter === null
+                                ? 'Todos conductores'
+                                : driverFilterName
+                        }
+                        icon={{
+                            name: 'truck',
+                            type: 'material-community',
+                            size: 20,
+                            color: 'white',
+                        }}
+                        containerStyle={{
+                            paddingLeft: 10,
+                        }}
+                        buttonStyle={{
+                            backgroundColor: '#0074cb',
+                        }}
+                        onPress={() => setDriverModal(true)}
+                    />
+                    <Chip
+                        title={
+                            dateFilter === null ? 'Todas fechas' : formattedDate
+                        }
                         icon={{
                             name: 'calendar',
                             type: 'material-community',
@@ -237,50 +344,40 @@ const ListScreen = ({ navigation }) => {
                             paddingLeft: 10,
                         }}
                         buttonStyle={{
-                            backgroundColor: '#9fabbb',
+                            backgroundColor: '#0074cb',
                         }}
-                    />
-                    <Chip
-                        title={filterTranslations[statusFilter]}
-                        icon={{
-                            name: 'view-list',
-                            type: 'material-community',
-                            size: 20,
-                            color: 'white',
-                        }}
-                        containerStyle={{
-                            paddingLeft: 10,
-                        }}
-                        buttonStyle={{
-                            backgroundColor: '#9fabbb',
-                        }}
+                        onPress={() => setDateModal(true)}
                     />
                 </View>
-                <Icon
-                    name='filter-variant'
-                    color='#0074cb'
-                    size={25}
-                    onPress={() => setFilterModalVisible(true)}
-                />
             </View>
             <ScrollView
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
-                        onRefresh={getAcceptedDonations}
+                        onRefresh={() =>
+                            getPickedupDonations(driverFilter, dateFilter)
+                        }
                     />
                 }
             >
-                {donations.length === 0 && (
+                {donations.length === 0 && !refreshing && (
                     <View style={styles.noDonations}>
                         <Text
                             style={{
                                 fontWeight: '400',
                                 fontSize: 24,
                                 color: '#626b79',
+                                textAlign: 'center',
+                                width: '80%',
                             }}
                         >
-                            Sin nuevas donaciones.
+                            {driverFilter === null && dateFilter === null
+                                ? 'No hay donaciones que hayan sido recogidas'
+                                : driverFilter === null && dateFilter !== null
+                                ? `No hay donaciones que hayan sido recogidas el ${formattedDate}.`
+                                : driverFilter !== null && dateFilter === null
+                                ? `${driverFilterName} no tiene donaciones recaudadas.`
+                                : `${driverFilterName} no tiene donaciones recaudadas el ${formattedDate}.`}
                         </Text>
                     </View>
                 )}
@@ -315,26 +412,60 @@ const ListScreen = ({ navigation }) => {
                                         style={{
                                             flex: 1,
                                             flexDirection: 'row',
-                                            justifyContent: 'space-around',
                                             width: '100%',
                                             marginTop: 10,
                                         }}
                                     >
-                                        <View>
-                                            <Text>Conductor:</Text>
-                                            <Text>
-                                                {data.pickup.driverName}
-                                            </Text>
+                                        <View
+                                            style={{
+                                                flexDirection: 'row',
+                                                width: '50%',
+                                                alignItems: 'center',
+                                            }}
+                                        >
+                                            <Icon name='truck' size={25} />
+                                            <View style={{ paddingLeft: 10 }}>
+                                                <Text
+                                                    style={{
+                                                        fontWeight: '500',
+                                                    }}
+                                                >
+                                                    Conductor:
+                                                </Text>
+                                                <Text
+                                                    style={{ color: '#626b79' }}
+                                                >
+                                                    {data.pickup.driverName}
+                                                </Text>
+                                            </View>
                                         </View>
-                                        <View>
-                                            <Text>Fecha:</Text>
-                                            <Text>
-                                                {data.pickup.date
-                                                    .toDate()
-                                                    .toLocaleDateString(
-                                                        'es-CO'
-                                                    )}
-                                            </Text>
+                                        <View
+                                            style={{
+                                                flexDirection: 'row',
+                                                width: '50%',
+                                                alignItems: 'center',
+                                                marginLeft: 12,
+                                            }}
+                                        >
+                                            <Icon name='calendar' size={25} />
+                                            <View style={{ paddingLeft: 10 }}>
+                                                <Text
+                                                    style={{
+                                                        fontWeight: '500',
+                                                    }}
+                                                >
+                                                    Fecha:
+                                                </Text>
+                                                <Text
+                                                    style={{ color: '#626b79' }}
+                                                >
+                                                    {data.pickup.date
+                                                        .toDate()
+                                                        .toLocaleDateString(
+                                                            'es-CO'
+                                                        )}
+                                                </Text>
+                                            </View>
                                         </View>
                                     </ListItem.Content>
                                 </ListItem.Content>
@@ -355,31 +486,6 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingBottom: 10,
         marginTop: 20,
-    },
-    filterContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(52, 52, 52, 0.8)',
-    },
-    filterBox: {
-        justifyContent: 'center',
-        padding: 20,
-        width: '80%',
-        backgroundColor: 'white',
-        borderRadius: 10,
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    filterHeading: {
-        marginLeft: 10,
-        marginBottom: 5,
-        fontSize: 18,
     },
     cardText: {
         flex: 1,
@@ -410,5 +516,17 @@ const styles = StyleSheet.create({
     chips: {
         flex: 1,
         flexDirection: 'row',
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 48,
+        marginBottom: 32,
+        marginHorizontal: 32,
+    },
+    modalBox: {
+        width: '100%',
+        height: '100%',
     },
 });

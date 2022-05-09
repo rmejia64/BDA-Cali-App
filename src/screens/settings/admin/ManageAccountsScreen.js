@@ -5,10 +5,9 @@ import { getDocs, collection, query, orderBy } from 'firebase/firestore';
 import { ListItem, Chip } from 'react-native-elements';
 import LoadingModal from '../../../../components/LoadingModal';
 
-const ManageAccountsScreen = ({ navigation }) => {
+const ManageAccountsScreen = ({ route, navigation }) => {
     const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [refreshKey, setRefreshKey] = useState(0);
+    const [refreshing, setRefreshing] = useState(false);
 
     const types = {
         admin: 'Administrador',
@@ -17,10 +16,11 @@ const ManageAccountsScreen = ({ navigation }) => {
     };
 
     const getUsers = async () => {
+        setRefreshing(true);
         let tempUsers = [];
 
         const users = collection(db, 'users');
-        const q = query(users, orderBy('name.first'));
+        const q = query(users, orderBy('type'));
 
         try {
             const querySnapshot = await getDocs(q);
@@ -31,27 +31,79 @@ const ManageAccountsScreen = ({ navigation }) => {
         } catch (error) {
             console.error(error);
         }
+        setRefreshing(false);
     };
 
     useEffect(() => {
-        navigation.addListener('focus', () => {
-            setLoading(true);
+        if (route.params !== undefined && route.params.refresh) {
             getUsers();
-            setLoading(false);
-        });
-    });
+        }
+    }, [route.params]);
 
     useEffect(() => {
-        setLoading(true);
         getUsers();
-        setLoading(false);
     }, []);
 
     return (
         <>
-            {/* <Filter /> */}
-            <LoadingModal visible={loading} />
-            <ScrollView>
+            <View
+                style={{
+                    backgroundColor: 'white',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    paddingRight: 10,
+                }}
+            >
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        marginVertical: 10,
+                    }}
+                >
+                    <Chip
+                        title={'Idk yet'}
+                        icon={{
+                            name: 'account-circle',
+                            type: 'material-community',
+                            size: 20,
+                            color: 'white',
+                        }}
+                        containerStyle={{
+                            paddingLeft: 10,
+                        }}
+                        buttonStyle={{
+                            backgroundColor: '#0074cb',
+                        }}
+                        onPress={() => {}}
+                    />
+                    <Chip
+                        title={'Idk yet'}
+                        icon={{
+                            name: 'calendar',
+                            type: 'material-community',
+                            size: 20,
+                            color: 'white',
+                        }}
+                        containerStyle={{
+                            paddingLeft: 10,
+                        }}
+                        buttonStyle={{
+                            backgroundColor: '#0074cb',
+                        }}
+                        onPress={() => {}}
+                    />
+                </View>
+            </View>
+            <ScrollView
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={getUsers}
+                    />
+                }
+            >
                 <View>
                     {users.map((u, i) => {
                         return (

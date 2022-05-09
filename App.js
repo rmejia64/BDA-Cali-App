@@ -14,8 +14,7 @@ import {
 import { auth, db } from './src/firebase/config';
 
 // Navigation
-import { NavigationContainer, StackActions } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { NavigationContainer } from '@react-navigation/native';
 import LoginHomeScreen from './src/screens/login/LoginHomeScreen';
 import HomeScreen from './src/screens/HomeScreen';
 
@@ -40,12 +39,10 @@ Notifications.setNotificationHandler({
     }),
 });
 
-const Stack = createNativeStackNavigator();
-
 function App() {
     const [expoPushToken, setExpoPushToken] = useState('');
     const [notification, setNotification] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [loggedIn, setLoggedIn] = useState(false);
 
     const notificationListener = useRef();
