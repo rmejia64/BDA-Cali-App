@@ -9,7 +9,7 @@ import {
     Modal,
     ActivityIndicator,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { auth, db } from '../../firebase/config';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -21,26 +21,7 @@ const LoginScreen = ({ navigation }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalText, setModalText] = useState('');
     const [loading, setLoading] = useState(false);
-
-    const errorModal = (error) => {
-        if (error === 'auth/wrong-password') {
-            setModalText('Incorrect password. Please try again.');
-        } else if (error === 'auth/user-not-found') {
-            setModalText('Email could not be found.');
-        } else if (error === 'auth/invalid-email') {
-            setModalText('Email is invalid.');
-        } else if (error === 'auth/internal-error') {
-            setModalText('Something went wrong. Please try again.');
-        } else if (error === 'auth/too-many-requests') {
-            setModalText('Too many attempts. Please try again later.');
-        } else {
-            setModalText(error);
-        }
-        setModalVisible(true);
-        setTimeout(() => {
-            setModalVisible(false);
-        }, 3 * 1000);
-    };
+    const mounted = useRef(true);
 
     const handleSignIn = () => {
         setLoading(true);
@@ -53,40 +34,27 @@ const LoginScreen = ({ navigation }) => {
                             alert('User does not exist anymore.');
                             return;
                         }
-                        setLoading(false);
                     })
                     .catch((error) => {
                         alert(error);
-                        setLoading(false);
                     });
             })
             .catch((error) => {
-                errorModal(error.code);
-                setLoading(false);
+                alert(error);
             });
+        if (mounted.current) {
+            setLoading(false);
+        }
     };
+
+    useEffect(() => {
+        return () => {
+            mounted.current = false;
+        };
+    }, []);
 
     return (
         <KeyboardAvoidingView style={styles.container} behavior='padding'>
-            <Modal
-                animationType='fade'
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => {
-                    setModalVisible(false);
-                }}
-            >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalView}>
-                        <Icon
-                            name='alert-circle-outline'
-                            size={30}
-                            color={'#FF6961'}
-                        />
-                        <Text style={{ marginLeft: 10 }}>{modalText}</Text>
-                    </View>
-                </View>
-            </Modal>
             <View style={styles.logoContainer}>
                 <Image
                     style={styles.logo}

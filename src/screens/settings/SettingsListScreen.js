@@ -23,6 +23,7 @@ const SettingsScreen = ({ navigation }) => {
                 onPress={() => {
                     navigation.push('EditAccountList');
                 }}
+                topDivider
                 bottomDivider
             >
                 <Icon name={'account-edit'} size={20} />

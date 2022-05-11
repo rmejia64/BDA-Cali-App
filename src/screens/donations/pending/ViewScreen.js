@@ -7,11 +7,13 @@ import {
     Modal,
     ActivityIndicator,
     Alert,
+    TouchableWithoutFeedback,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { deleteDoc, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../firebase/config';
 import { ListItem } from 'react-native-elements';
+import MapView, { Marker } from 'react-native-maps';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import LoadingModal from '../../../../components/LoadingModal';
@@ -19,19 +21,12 @@ import LoadingModal from '../../../../components/LoadingModal';
 const ViewScreen = ({ route, navigation }) => {
     const data = route.params.data;
     const id = route.params.id;
-    const formattedDate =
-        data.pickup === undefined
-            ? null
-            : data.pickup.date === undefined
-            ? null
-            : data.pickup.date.toDate();
 
     const [driver, setDriver] = useState('');
     const [driverName, setDriverName] = useState('');
-    const [pickupDate, setPickupDate] = useState(formattedDate);
+    const [pickupDate, setPickupDate] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [modalVisible, setModalVisible] = useState(false);
-    const [modalType, setModalType] = useState('');
+    const [mapOpen, setMapOpen] = useState(false);
 
     // date picker statesr
     const [dateOpen, setDateOpen] = useState(false);
@@ -71,7 +66,9 @@ const ViewScreen = ({ route, navigation }) => {
         });
     };
 
-    const getDriverName = async () => {
+    const getData = async () => {
+        setLoading(true);
+
         const donationRef = doc(db, 'pending', id);
         const donationSnap = await getDoc(donationRef);
         const donation = donationSnap.data();
@@ -79,6 +76,7 @@ const ViewScreen = ({ route, navigation }) => {
         if (donation.pickup === undefined) {
             setDriver('');
             setDriverName('No asignado');
+            setPickupDate(null);
         } else {
             if (donation.pickup.driver === undefined) {
                 setDriver('');
@@ -87,32 +85,85 @@ const ViewScreen = ({ route, navigation }) => {
                 setDriver(donation.pickup.driver);
                 setDriverName(donation.pickup.driverName);
             }
+
+            if (donation.pickup.date === undefined) {
+                setPickupDate(null);
+            } else {
+                setPickupDate(donation.pickup.date.toDate());
+            }
         }
+
+        setTimeout(() => {
+            setLoading(false);
+        }, 500);
     };
 
     const handleDateConfirm = async (date) => {
+        setPickupDate(date);
+
         const donationRef = doc(db, 'pending', id);
 
         await updateDoc(donationRef, {
             'pickup.date': date,
         });
 
-        setPickupDate(date);
-
         setDateOpen(false);
     };
 
     useEffect(() => {
         navigation.addListener('focus', () => {
-            setLoading(true);
-            getDriverName();
-            setLoading(false);
+            getData();
         });
-    });
+    }, [navigation]);
+
+    useEffect(() => {
+        getData();
+    }, []);
 
     return (
-        <View style={styles.container}>
+        <>
             <LoadingModal visible={loading} />
+            <Modal
+                visible={mapOpen}
+                transparent
+                animationType='fade'
+                onRequestClose={() => setMapOpen(false)}
+            >
+                <TouchableOpacity
+                    style={styles.modalContainer}
+                    onPressOut={() => setMapOpen(false)}
+                >
+                    <TouchableWithoutFeedback>
+                        <MapView
+                            style={styles.mapView}
+                            initialRegion={{
+                                latitude: data.client.address.lat,
+                                longitude: data.client.address.lng,
+                                latitudeDelta: 0.04,
+                                longitudeDelta: 0.04,
+                            }}
+                        >
+                            <Marker
+                                coordinate={{
+                                    latitude: data.client.address.lat,
+                                    longitude: data.client.address.lng,
+                                }}
+                                title={
+                                    data.client.type === 'org'
+                                        ? data.org.name
+                                        : `${data.indiv.name.first} ${
+                                              data.indiv.name.last1
+                                          }${
+                                              data.indiv.name.last2 === null
+                                                  ? ''
+                                                  : ` ${data.indiv.name.last2}`
+                                          }`
+                                }
+                            />
+                        </MapView>
+                    </TouchableWithoutFeedback>
+                </TouchableOpacity>
+            </Modal>
             <ScrollView>
                 <ListItem topDivider bottomDivider>
                     <Icon name='calendar' size={25} />
@@ -210,13 +261,19 @@ const ViewScreen = ({ route, navigation }) => {
                         </ListItem.Subtitle>
                     </ListItem.Content>
                 </ListItem>
-                <ListItem bottomDivider>
+                <ListItem
+                    bottomDivider
+                    onPress={() => {
+                        setMapOpen(true);
+                    }}
+                >
                     <ListItem.Content>
                         <ListItem.Title>Dirección</ListItem.Title>
                         <ListItem.Subtitle>
-                            {`${data.client.address.street}\n${data.client.address.city}, ${data.client.address.region}`}
+                            {data.client.address.formatted}
                         </ListItem.Subtitle>
                     </ListItem.Content>
+                    <ListItem.Chevron />
                 </ListItem>
 
                 <ListItem
@@ -296,7 +353,7 @@ const ViewScreen = ({ route, navigation }) => {
                 onCancel={() => setDateOpen(false)}
                 isDarkModeEnabled={false}
             />
-        </View>
+        </>
     );
 };
 
@@ -328,13 +385,23 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: 'rgba(52, 52, 52, 0.3)',
     },
     modalView: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '80%',
-        height: '30%',
+        width: '90%',
         backgroundColor: 'white',
+        borderRadius: 10,
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    mapView: {
+        width: '80%',
+        height: '60%',
         borderRadius: 10,
         shadowOffset: {
             width: 0,

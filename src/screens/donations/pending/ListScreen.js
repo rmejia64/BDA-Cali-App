@@ -199,6 +199,10 @@ const ListScreen = ({ route, navigation }) => {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     paddingRight: 10,
+                    borderTopColor: 'rgba(0, 0, 0, 0.15)',
+                    borderBottomColor: 'rgba(0, 0, 0, 0.15)',
+                    borderTopWidth: 1,
+                    borderBottomWidth: 1,
                 }}
             >
                 <View
@@ -283,7 +287,6 @@ const ListScreen = ({ route, navigation }) => {
                                         data: data,
                                     });
                                 }}
-                                topDivider={idx === 0}
                                 bottomDivider
                             >
                                 {ready ? (
@@ -313,14 +316,14 @@ const ListScreen = ({ route, navigation }) => {
                                     <ListItem.Subtitle
                                         style={{ color: '#626b79' }}
                                     >
-                                        {data.dateCreated
+                                        {`Creada: ${data.dateCreated
                                             .toDate()
-                                            .toLocaleDateString('es-CO')}
+                                            .toLocaleDateString('es-CO')}`}
                                     </ListItem.Subtitle>
                                     <ListItem.Subtitle
-                                        style={{ paddingTop: 5 }}
+                                        style={{ paddingTop: 5, width: '100%' }}
                                     >
-                                        {`${data.client.address.street}\n${data.client.address.city}, ${data.client.address.region}`}
+                                        {data.client.address.formatted}
                                     </ListItem.Subtitle>
                                 </ListItem.Content>
                                 <ListItem.Chevron />

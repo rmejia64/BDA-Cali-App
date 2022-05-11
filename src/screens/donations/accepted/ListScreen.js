@@ -91,7 +91,7 @@ const ListScreen = ({ route, navigation }) => {
 
     const SelectDriverModal = () => {
         return (
-            <Modal visible={driverModal}>
+            <Modal visible={driverModal} animationType='fade'>
                 <View style={styles.modalContainer}>
                     <View style={styles.modalBox}>
                         <View style={{ alignItems: 'flex-end' }}>
@@ -169,7 +169,7 @@ const ListScreen = ({ route, navigation }) => {
                                             >
                                                 <ListItem.Content>
                                                     <ListItem.Title>
-                                                        {name}
+                                                        {`${data.plate} (${name})`}
                                                     </ListItem.Title>
                                                 </ListItem.Content>
                                             </ListItem>
@@ -186,7 +186,7 @@ const ListScreen = ({ route, navigation }) => {
 
     const DatePickerModal = () => {
         return (
-            <Modal visible={dateModalOpen}>
+            <Modal visible={dateModalOpen} animationType='fade'>
                 <View style={styles.modalContainer}>
                     <View style={styles.modalBox}>
                         <View style={{ alignItems: 'flex-end' }}>
@@ -292,6 +292,10 @@ const ListScreen = ({ route, navigation }) => {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     paddingRight: 10,
+                    borderTopColor: 'rgba(0, 0, 0, 0.15)',
+                    borderBottomColor: 'rgba(0, 0, 0, 0.15)',
+                    borderTopWidth: 1,
+                    borderBottomWidth: 1,
                 }}
             >
                 <View
@@ -389,7 +393,6 @@ const ListScreen = ({ route, navigation }) => {
                                         data: data,
                                     });
                                 }}
-                                topDivider={idx === 0}
                                 bottomDivider
                             >
                                 <ListItem.Content>
@@ -430,7 +433,7 @@ const ListScreen = ({ route, navigation }) => {
                                                 <Text
                                                     style={{ color: '#626b79' }}
                                                 >
-                                                    {data.pickup.driverName}
+                                                    {`${data.pickup.driverPlate}\n(${data.pickup.driverName})`}
                                                 </Text>
                                             </View>
                                         </View>

@@ -14,7 +14,7 @@ const EditAccountListScreen = ({ navigation }) => {
 
     return (
         <View>
-            <ListItem bottomDivider>
+            <ListItem topDivider bottomDivider>
                 <ListItem.Content>
                     <ListItem.Title>Nombre</ListItem.Title>
                     <ListItem.Subtitle right>

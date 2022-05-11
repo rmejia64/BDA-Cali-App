@@ -4,7 +4,6 @@ import ViewScreen from './pending/ViewScreen';
 import ListScreen from './pending/ListScreen';
 import AssignDriverScreen from './pending/AssignDriverScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { HeaderBackButton } from '@react-navigation/native';
 
 const Stack = createNativeStackNavigator();
 

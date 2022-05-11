@@ -42,7 +42,7 @@ Notifications.setNotificationHandler({
 function App() {
     const [expoPushToken, setExpoPushToken] = useState('');
     const [notification, setNotification] = useState(false);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [loggedIn, setLoggedIn] = useState(false);
 
     const notificationListener = useRef();
@@ -130,24 +130,20 @@ function App() {
     };
 
     useEffect(() => {
-        let mounted = true;
-
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 setLoading(true);
                 getDoc(doc(db, 'users', user.uid))
                     .then((userSnap) => {
-                        if (mounted) {
-                            const userData = userSnap.data();
-                            if (
-                                userData.type === 'admin' ||
-                                userData.type === 'warehouse'
-                            ) {
-                                saveDrivers();
-                            }
-                            dispatch(setUser([user.uid, userData]));
-                            setLoggedIn(true);
+                        const userData = userSnap.data();
+                        if (
+                            userData.type === 'admin' ||
+                            userData.type === 'warehouse'
+                        ) {
+                            saveDrivers();
                         }
+                        dispatch(setUser([user.uid, userData]));
+                        setLoggedIn(true);
                     })
                     .catch((error) => {
                         console.error(error);
@@ -156,9 +152,7 @@ function App() {
                         setLoading(false);
                     });
             } else {
-                if (mounted) {
-                    setLoggedIn(false);
-                }
+                setLoggedIn(false);
             }
         });
         return unsubscribe;

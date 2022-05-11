@@ -21,10 +21,10 @@ const ListScreen = ({ route, navigation }) => {
     const id = useSelector((state) => state.user.id);
 
     const [refreshing, setRefreshing] = useState(false);
-    const [refreshKey, setRefreshKey] = useState(0);
     const [pickups, setPickups] = useState([]);
 
     const getAssignedPickups = async () => {
+        setRefreshing(true);
         let tempPickups = [];
         let q;
 
@@ -51,10 +51,7 @@ const ListScreen = ({ route, navigation }) => {
         } catch (error) {
             console.error(error.message);
         }
-    };
-
-    const formatAddress = (address) => {
-        return `${address.street}\n${address.city}, ${address.region}`;
+        setRefreshing(false);
     };
 
     const formatName = (indiv) => {
@@ -64,25 +61,21 @@ const ListScreen = ({ route, navigation }) => {
     };
 
     useEffect(() => {
-        navigation.addListener('focus', () => {
+        if (route.params !== undefined && route.params.refresh) {
             getAssignedPickups();
-        });
-    });
+        }
+    }, [route.params]);
 
     useEffect(() => {
-        setRefreshing(true);
         getAssignedPickups();
-        setRefreshing(false);
-    }, [refreshKey]);
+    }, []);
 
     return (
         <ScrollView
             refreshControl={
                 <RefreshControl
                     refreshing={refreshing}
-                    onRefresh={() => {
-                        setRefreshKey((oldkey) => oldkey + 1);
-                    }}
+                    onRefresh={getAssignedPickups}
                 />
             }
         >
@@ -102,11 +95,11 @@ const ListScreen = ({ route, navigation }) => {
             {pickups.map((pickup, idx) => {
                 const data = pickup.data;
                 const id = pickup.id;
-                const address = formatAddress(data.client.address);
                 const name =
                     data.indiv !== undefined
                         ? formatName(data.indiv)
                         : data.org.name;
+                const address = data.client.address;
                 return (
                     <ListItem
                         key={id}
@@ -121,7 +114,9 @@ const ListScreen = ({ route, navigation }) => {
                     >
                         <ListItem.Content>
                             <ListItem.Title>{name}</ListItem.Title>
-                            <ListItem.Subtitle>{address}</ListItem.Subtitle>
+                            <ListItem.Subtitle>
+                                {address.formatted}
+                            </ListItem.Subtitle>
                         </ListItem.Content>
                         <ListItem.Chevron />
                     </ListItem>

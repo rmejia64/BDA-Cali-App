@@ -170,6 +170,7 @@ const ListScreen = ({ route, navigation }) => {
                                                 ? ''
                                                 : ` ${data.name.last2}`
                                         }`;
+                                        const plate = data.plate;
 
                                         return (
                                             <ListItem
@@ -188,7 +189,7 @@ const ListScreen = ({ route, navigation }) => {
                                             >
                                                 <ListItem.Content>
                                                     <ListItem.Title>
-                                                        {name}
+                                                        {`${plate} (${name})`}
                                                     </ListItem.Title>
                                                 </ListItem.Content>
                                             </ListItem>
@@ -301,6 +302,10 @@ const ListScreen = ({ route, navigation }) => {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     paddingRight: 10,
+                    borderTopColor: 'rgba(0, 0, 0, 0.15)',
+                    borderBottomColor: 'rgba(0, 0, 0, 0.15)',
+                    borderTopWidth: 1,
+                    borderBottomWidth: 1,
                 }}
             >
                 <View
@@ -394,7 +399,6 @@ const ListScreen = ({ route, navigation }) => {
                                         data: data,
                                     });
                                 }}
-                                topDivider={idx === 0}
                                 bottomDivider
                             >
                                 <ListItem.Content>
@@ -435,7 +439,7 @@ const ListScreen = ({ route, navigation }) => {
                                                 <Text
                                                     style={{ color: '#626b79' }}
                                                 >
-                                                    {data.pickup.driverName}
+                                                    {`${data.pickup.driverPlate}\n(${data.pickup.driverName})`}
                                                 </Text>
                                             </View>
                                         </View>

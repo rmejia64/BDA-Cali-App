@@ -7,12 +7,14 @@ import ViewScreen from './driver/ViewScreen';
 const Stack = createNativeStackNavigator();
 
 const PickupScreen = () => {
+    const currentDate = new Date().toLocaleDateString('es-CO');
+
     return (
         <Stack.Navigator initialRouteName='List'>
             <Stack.Screen
                 name='List'
                 component={ListScreen}
-                options={{ title: 'Recogidas' }}
+                options={{ title: `Recogidas (${currentDate})` }}
             />
             <Stack.Screen
                 name='View'

@@ -55,11 +55,13 @@ const AssignDriverScreen = ({ route, navigation }) => {
                         ? ''
                         : ` ${driver.data.name.last2}`
                 }`,
+                'pickup.driverPlate': driver.data.plate,
             });
         } else {
             await updateDoc(donationRef, {
                 'pickup.driver': deleteField(),
                 'pickup.driverName': deleteField(),
+                'pickup.driverPlate': deleteField(),
             });
         }
 
@@ -73,15 +75,21 @@ const AssignDriverScreen = ({ route, navigation }) => {
         getDrivers();
     }, []);
 
-    useEffect(() => {
-        navigation.addListener('beforeRemove', (e) => {});
-    }, [navigation]);
-
     return (
         <View style={{ height: '100%' }}>
             <LoadingModal visible={loading} />
             <ScrollView>
                 {drivers.map((driver, idx) => {
+                    const name = driver.data.name;
+                    const plate = driver.data.plate;
+                    const [first, last1, last2] = [
+                        name.first,
+                        name.last1,
+                        name.last2,
+                    ];
+                    const driverName = `${first} ${last1}${
+                        last2 !== '' ? ` ${last2}` : ''
+                    }`;
                     return (
                         <ListItem
                             topDivider={idx === 0}
@@ -98,11 +106,7 @@ const AssignDriverScreen = ({ route, navigation }) => {
                             />
                             <ListItem.Content>
                                 <ListItem.Title>
-                                    {driver.data.name.first}{' '}
-                                    {driver.data.name.last1}{' '}
-                                    {driver.data.name.last2 !== ''
-                                        ? driver.data.name.last2
-                                        : ''}
+                                    {`${plate} (${driverName})`}
                                 </ListItem.Title>
                             </ListItem.Content>
                         </ListItem>

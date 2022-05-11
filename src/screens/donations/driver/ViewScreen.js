@@ -5,25 +5,18 @@ import {
     StyleSheet,
     Text,
     View,
-    ActivityIndicator,
     TextInput,
     ScrollView,
     TouchableOpacity,
     Alert,
     KeyboardAvoidingView,
 } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { Button, CheckBox } from 'react-native-elements';
 import { app, db } from '../../../firebase/config';
-import {
-    deleteObject,
-    getDownloadURL,
-    getStorage,
-    ref,
-    uploadBytes,
-} from 'firebase/storage';
-import { deleteDoc, doc, setDoc, updateDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes } from 'firebase/storage';
+import { deleteDoc, doc, setDoc } from 'firebase/firestore';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import { Formik } from 'formik';
@@ -31,15 +24,17 @@ import SignatureScreen from 'react-native-signature-canvas';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import * as FileSystem from 'expo-file-system';
 import LoadingModal from '../../../../components/LoadingModal';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import openMap from 'react-native-open-maps';
 
 const ViewScreen = ({ route, navigation }) => {
     const params = route.params;
+    const data = params.data;
+
     const [hasReceipt, setHasReceipt] = useState('yes');
     const [image, setImage] = useState(null);
-    const [imageLoading, setImageLoading] = useState(false);
     const [signature, setSignature] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [signatureVisible, setSignatureVisible] = useState(false);
 
     const askForPermissions = async (type) => {
@@ -63,43 +58,30 @@ const ViewScreen = ({ route, navigation }) => {
 
     const uploadImagesAsync = async () => {
         const storage = getStorage(app);
-        const receiptImgID = `receipts/${uuidv4()}`;
-        const receiptImgRef = ref(storage, receiptImgID);
-        const signatureImgID = `signatures/${signature.split('/').pop()}`;
-        const signatureImgRef = ref(storage, signatureImgID);
 
-        // if the donation already had a receipt image, delete it
-        if (params.data.pickup.receiptImage !== undefined) {
-            const oldImgRef = ref(storage, params.data.pickup.receiptImage);
-            deleteObject(oldImgRef)
-                .then(() => {})
-                .catch((e) => console.error(e));
-        }
+        // receipt
+        if (image !== null) {
+            const receiptImgID = `receipts/${uuidv4()}`;
+            const receiptImgRef = ref(storage, receiptImgID);
 
-        if (signature !== null && params.data.signatureImage !== undefined) {
-            const oldSignatureRef = ref(storage, params.data.signatureImage);
-            deleteObject(oldSignatureRef)
-                .then(() => {})
-                .catch((e) => console.error(e));
-        }
-
-        try {
             const receiptImg = await fetch(image);
             const receiptBytes = await receiptImg.blob();
             await uploadBytes(receiptImgRef, receiptBytes);
+
+            params.data.pickup.receiptImage = receiptImgID;
+        }
+
+        // signature
+        if (signature !== null) {
+            console.log('signature is not null');
+            const signatureImgID = `signatures/${signature.split('/').pop()}`;
+            const signatureImgRef = ref(storage, signatureImgID);
 
             const signatureImg = await fetch(signature);
             const signatureBytes = await signatureImg.blob();
             await uploadBytes(signatureImgRef, signatureBytes);
 
-            const donationRef = doc(db, 'accepted', params.id);
-            await updateDoc(donationRef, {
-                'pickup.receiptImage': receiptImgID,
-                'pickup.signatureImage': signatureImgID,
-            });
-        } catch (e) {
-            console.error(e);
-            alert('Image upload failed, please try again.');
+            params.data.pickup.signatureImage = signatureImgID;
         }
     };
 
@@ -129,31 +111,8 @@ const ViewScreen = ({ route, navigation }) => {
         }
     };
 
-    const getDonationImages = async () => {
-        setLoading(true);
-
-        const storage = getStorage(app);
-
-        if (params.data.pickup.receiptImage !== undefined) {
-            const reference = ref(storage, params.data.pickup.receiptImage);
-            await getDownloadURL(reference).then((url) => {
-                setImage(url);
-            });
-        }
-
-        if (params.data.pickup.signatureImage !== undefined) {
-            const reference = ref(storage, params.data.pickup.signatureImage);
-            await getDownloadURL(reference).then((url) => {
-                setSignature(url);
-            });
-        }
-
-        setLoading(false);
-    };
-
     const handleDonationSubmit = async (values) => {
         setLoading(true);
-        setIsSubmitting(true);
 
         const donationRef = doc(db, 'pickedup', params.id);
         let data = params.data;
@@ -162,19 +121,21 @@ const ViewScreen = ({ route, navigation }) => {
             data.pickup.noReceiptReason = values.noReceiptReason;
         }
 
-        if (hasReceipt === 'yes' && image !== null) {
-            await uploadImagesAsync();
-        }
-
-        await setDoc(donationRef, data);
+        await uploadImagesAsync();
+        await setDoc(donationRef, params.data);
         await deleteDoc(doc(db, 'accepted', params.id));
-        navigation.navigate({
-            name: 'List',
-            merge: true,
-        });
 
         setLoading(false);
-        setIsSubmitting(false);
+
+        navigation.navigate('List', {
+            refresh: true,
+        });
+    };
+
+    const formatName = (indiv) => {
+        return `${indiv.name.first} ${indiv.name.last1}${
+            indiv.name.last2 !== null ? ` ${indiv.name.last2}` : ''
+        }`;
     };
 
     const SignatureModal = () => {
@@ -288,10 +249,6 @@ const ViewScreen = ({ route, navigation }) => {
         );
     };
 
-    useEffect(async () => {
-        await getDonationImages();
-    }, []);
-
     return (
         <View>
             <LoadingModal visible={loading} />
@@ -349,7 +306,6 @@ const ViewScreen = ({ route, navigation }) => {
                     handleSubmit,
                     values,
                     errors,
-                    touched,
                 }) => (
                     <KeyboardAvoidingView
                         style={{
@@ -359,6 +315,89 @@ const ViewScreen = ({ route, navigation }) => {
                     >
                         <ScrollView>
                             <View>
+                                <TouchableOpacity
+                                    style={{
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        marginTop: 24,
+                                        backgroundColor: 'white',
+                                        marginHorizontal: '15%',
+                                        paddingVertical: 24,
+                                        borderRadius: 10,
+                                        borderWidth: 2,
+                                        borderColor: '#0074cb',
+                                    }}
+                                    onPress={() => {
+                                        openMap({
+                                            end: data.client.address.formatted,
+                                        });
+                                    }}
+                                >
+                                    <View
+                                        style={{
+                                            flexDirection: 'row',
+                                            marginBottom: 5,
+                                        }}
+                                    >
+                                        <Icon
+                                            name='map-marker'
+                                            color='#0074cb'
+                                            size={30}
+                                        />
+                                        <Text
+                                            style={{
+                                                fontSize: 24,
+                                                fontWeight: '700',
+                                                color: '#0074cb',
+                                                marginLeft: 5,
+                                            }}
+                                        >
+                                            Navegar
+                                        </Text>
+                                    </View>
+                                    <View
+                                        style={{
+                                            marginHorizontal: 12,
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                fontWeight: '600',
+                                                fontSize: 14,
+                                                color: 'gray',
+                                                textAlign: 'center',
+                                            }}
+                                        >
+                                            {data.indiv !== undefined
+                                                ? `${data.indiv.name.first} ${
+                                                      data.indiv.name.last1
+                                                  }${
+                                                      data.indiv.name.last2 !==
+                                                      null
+                                                          ? ` ${data.indiv.name.last2}`
+                                                          : ''
+                                                  }`
+                                                : data.org.name}
+                                        </Text>
+                                        <Text
+                                            style={{
+                                                color: 'gray',
+                                                textAlign: 'center',
+                                            }}
+                                        >
+                                            {data.client.address.formatted}
+                                        </Text>
+                                    </View>
+                                </TouchableOpacity>
+                                <View
+                                    style={{
+                                        width: '90%',
+                                        borderWidth: 1,
+                                        borderColor: 'rgba(0, 0, 0, 0.15)',
+                                        marginHorizontal: '5%',
+                                        marginTop: 32,
+                                    }}
+                                />
                                 <Text style={styles.header}>
                                     El donante tiene recibo?{' '}
                                     <Text style={{ color: 'red' }}>*</Text>
@@ -384,22 +423,15 @@ const ViewScreen = ({ route, navigation }) => {
                                 {hasReceipt === 'yes' ? (
                                     <>
                                         <View style={styles.imageContainer}>
-                                            {!imageLoading ? (
-                                                image !== null && (
-                                                    <Image
-                                                        source={{
-                                                            uri: image,
-                                                        }}
-                                                        style={{
-                                                            width: '80%',
-                                                            height: 350,
-                                                        }}
-                                                    />
-                                                )
-                                            ) : (
-                                                <ActivityIndicator
-                                                    color='grey'
-                                                    size='large'
+                                            {image !== null && (
+                                                <Image
+                                                    source={{
+                                                        uri: image,
+                                                    }}
+                                                    style={{
+                                                        width: '80%',
+                                                        height: 350,
+                                                    }}
                                                 />
                                             )}
                                         </View>
@@ -547,7 +579,7 @@ const ViewScreen = ({ route, navigation }) => {
                         <TouchableOpacity
                             style={styles.submitButton}
                             onPress={handleSubmit}
-                            disabled={isSubmitting}
+                            disabled={loading}
                         >
                             <Text style={{ color: 'white', fontSize: 24 }}>
                                 RECOGIDO

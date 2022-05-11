@@ -7,14 +7,18 @@ import {
     Modal,
     Alert,
     TextInput,
+    Image,
+    ActivityIndicator,
+    SafeAreaView,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import LoadingModal from '../../../../components/LoadingModal';
 import { deleteDoc, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../../../firebase/config';
+import { db, app } from '../../../firebase/config';
 import { CheckBox, ListItem } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import DateTimePicker from 'react-native-modal-datetime-picker';
+import { getDownloadURL, getStorage, ref } from 'firebase/storage';
 
 const ViewScreen = ({ route, navigation }) => {
     const data = route.params.data;
@@ -35,24 +39,20 @@ const ViewScreen = ({ route, navigation }) => {
     const [quantity, setQuantity] = useState(null);
     const [tempQuantity, setTempQuantity] = useState(null);
 
-    const moveToAccepted = async () => {
+    // receipt image/reason
+    const [receipt, setReceipt] = useState(null);
+    const [imageLoading, setImageLoading] = useState(false);
+    const [receiptModal, setReceiptModal] = useState(false);
+
+    const submitDonation = async () => {
         setLoading(true);
 
         const current = doc(db, 'pickedup', id);
         const currentSnap = await getDoc(current);
         const currentDonation = currentSnap.data();
 
-        await setDoc(doc(db, 'accepted', id), currentDonation);
+        await setDoc(doc(db, 'completed', id), currentDonation);
         await deleteDoc(doc(db, 'pickedup', id));
-
-        setLoading(false);
-        navigation.navigate('List', {
-            refresh: true,
-        });
-    };
-
-    const submitDonation = async () => {
-        setLoading(true);
 
         setLoading(false);
         navigation.navigate('List', {
@@ -99,6 +99,18 @@ const ViewScreen = ({ route, navigation }) => {
         }, 500);
     };
 
+    const getReceiptImage = async () => {
+        if (data.pickup.receiptImage !== undefined) {
+            setImageLoading(true);
+            const storage = getStorage(app);
+            const reference = ref(storage, data.pickup.receiptImage);
+            await getDownloadURL(reference).then((url) => {
+                setReceipt(url);
+            });
+            setImageLoading(false);
+        }
+    };
+
     const updatePackaging = async (newPackaging) => {
         setPackagingModal(false);
         if (newPackaging !== packaging) {
@@ -118,6 +130,11 @@ const ViewScreen = ({ route, navigation }) => {
 
     const updateQuantity = async (newQuantity) => {
         setQuantityModal(false);
+
+        if (newQuantity === null || newQuantity === '') {
+            return;
+        }
+
         if (newQuantity !== quantity) {
             setLoading(true);
             setQuantity(newQuantity);
@@ -147,14 +164,20 @@ const ViewScreen = ({ route, navigation }) => {
     };
 
     useEffect(() => {
-        navigation.addListener('focus', () => {
-            getData();
-        });
-    });
+        getData();
+    }, []);
 
     return (
         <>
             <LoadingModal visible={loading} />
+            <DateTimePicker
+                isVisible={dateOpen}
+                mode='date'
+                minimumDate={new Date()}
+                onConfirm={updateExpiration}
+                onCancel={() => setDateOpen(false)}
+                isDarkModeEnabled={false}
+            />
             <Modal visible={packagingModal} animationType='fade' transparent>
                 <View style={styles.modalContainer}>
                     <View style={styles.modalView}>
@@ -269,14 +292,68 @@ const ViewScreen = ({ route, navigation }) => {
                     </View>
                 </View>
             </Modal>
-            <DateTimePicker
-                isVisible={dateOpen}
-                mode='date'
-                minimumDate={new Date()}
-                onConfirm={updateExpiration}
-                onCancel={() => setDateOpen(false)}
-                isDarkModeEnabled={false}
-            />
+            <Modal visible={receiptModal} animationType='fade' transparent>
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalView}>
+                        <View style={{ alignItems: 'flex-end', margin: 12 }}>
+                            <Icon
+                                name='close'
+                                color='#626b79'
+                                size={30}
+                                onPress={() => {
+                                    setReceiptModal(false);
+                                }}
+                            />
+                        </View>
+                        {data.pickup.receiptImage === undefined ? (
+                            <View style={{ marginBottom: 32 }}>
+                                <Text
+                                    style={{
+                                        fontWeight: '500',
+                                        fontSize: 18,
+                                        textAlign: 'center',
+                                        marginBottom: 12,
+                                    }}
+                                >
+                                    Razón por la que falta el recibo:
+                                </Text>
+                                <Text
+                                    style={{
+                                        fontSize: 16,
+                                        color: 'gray',
+                                        textAlign: 'center',
+                                    }}
+                                >
+                                    "{data.pickup.noReceiptReason}"
+                                </Text>
+                            </View>
+                        ) : (
+                            <View
+                                style={{
+                                    height: 400,
+                                    marginHorizontal: '5%',
+                                    marginBottom: 32,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                {imageLoading ? (
+                                    <ActivityIndicator color='gray' size={50} />
+                                ) : (
+                                    <Image
+                                        source={{ uri: receipt }}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                        }}
+                                        resizeMode='cover'
+                                    />
+                                )}
+                            </View>
+                        )}
+                    </View>
+                </View>
+            </Modal>
             <ScrollView>
                 <View style={styles.section}>
                     <Text style={styles.header}>Info de donación</Text>
@@ -361,10 +438,61 @@ const ViewScreen = ({ route, navigation }) => {
                         )}
                     </View>
                 )}
+                <View style={styles.section}>
+                    <Text style={styles.header}>Recibo & Firma</Text>
+                    <ListItem
+                        topDivider
+                        bottomDivider
+                        onPress={() => {
+                            setReceiptModal(true);
+                            if (receipt === null) getReceiptImage();
+                        }}
+                    >
+                        <ListItem.Content>
+                            <ListItem.Title>
+                                ¿Se recogió el recibo?
+                            </ListItem.Title>
+                            <ListItem.Subtitle>
+                                {data.pickup.receiptImage === undefined
+                                    ? 'No'
+                                    : 'Sí'}
+                            </ListItem.Subtitle>
+                        </ListItem.Content>
+                        <ListItem.Chevron />
+                    </ListItem>
+                    <ListItem bottomDivider>
+                        <ListItem.Content>
+                            <ListItem.Title>¿Firma del donante?</ListItem.Title>
+                            <ListItem.Subtitle>
+                                {data.pickup.signature === undefined
+                                    ? 'No'
+                                    : 'Sí'}
+                            </ListItem.Subtitle>
+                        </ListItem.Content>
+                    </ListItem>
+                </View>
             </ScrollView>
             <TouchableOpacity
                 style={styles.doneButton}
-                onPress={submitDonation}
+                onPress={() => {
+                    Alert.alert(
+                        'Confirmar',
+                        '¿Estás seguro que quieres enviar? Esto no se puede deshacer.',
+                        [
+                            {
+                                text: 'Enviar',
+                                onPress: () => {
+                                    submitDonation();
+                                },
+                            },
+                            {
+                                text: 'Cancelar',
+                                onPress: () => {},
+                                style: 'cancel',
+                            },
+                        ]
+                    );
+                }}
             >
                 <Text style={styles.doneButtonText}>Enviar</Text>
             </TouchableOpacity>
@@ -414,11 +542,9 @@ const styles = StyleSheet.create({
     },
     input: {
         backgroundColor: 'rgba(0, 0, 0, 0.06)',
-        paddingHorizontal: 15,
-        paddingVertical: 15,
-        borderRadius: 15,
-        marginTop: 10,
-        width: '60%',
+        borderRadius: 5,
+        width: '50%',
+        height: 46,
         textAlign: 'center',
     },
     expSubmit: {
@@ -427,7 +553,7 @@ const styles = StyleSheet.create({
         width: '50%',
         backgroundColor: '#0074cb',
         borderRadius: 3,
-        height: 38,
+        height: 46,
         marginTop: 18,
     },
     expSubmitText: {
