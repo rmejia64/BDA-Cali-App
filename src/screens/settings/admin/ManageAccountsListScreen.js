@@ -1,13 +1,27 @@
-import { StyleSheet, View, ScrollView, RefreshControl } from 'react-native';
+import {
+    StyleSheet,
+    View,
+    ScrollView,
+    RefreshControl,
+    Modal,
+    Text,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+} from 'react-native';
 import { db } from '../../../firebase/config';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getDocs, collection, query, orderBy } from 'firebase/firestore';
 import { ListItem, Chip } from 'react-native-elements';
-import LoadingModal from '../../../../components/LoadingModal';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const ManageAccountsScreen = ({ route, navigation }) => {
+const ManageAccountsListScreen = ({ route, navigation }) => {
     const [users, setUsers] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
+
+    const [typeFilter, setTypeFilter] = useState(false);
+    const [type, setType] = useState(null);
+
+    const mounted = useRef(true);
 
     const types = {
         admin: 'Administrador',
@@ -31,7 +45,10 @@ const ManageAccountsScreen = ({ route, navigation }) => {
         } catch (error) {
             console.error(error);
         }
-        setRefreshing(false);
+
+        if (mounted.current) {
+            setRefreshing(false);
+        }
     };
 
     useEffect(() => {
@@ -42,10 +59,36 @@ const ManageAccountsScreen = ({ route, navigation }) => {
 
     useEffect(() => {
         getUsers();
+
+        return () => {
+            mounted.current = false;
+        };
     }, []);
 
     return (
         <>
+            <Modal
+                visible={typeFilter}
+                animationType='fade'
+                transparent
+                onRequestClose={() => setTypeFilter(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalView}>
+                        <View style={{ alignItems: 'flex-end' }}>
+                            <Icon
+                                name='close'
+                                color='#626b79'
+                                size={20}
+                                onPress={() => {
+                                    setTypeFilter(false);
+                                }}
+                            />
+                        </View>
+                        <Text>Hello world!</Text>
+                    </View>
+                </View>
+            </Modal>
             <View
                 style={{
                     backgroundColor: 'white',
@@ -53,6 +96,10 @@ const ManageAccountsScreen = ({ route, navigation }) => {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     paddingRight: 10,
+                    borderTopColor: 'rgba(0, 0, 0, 0.15)',
+                    borderBottomColor: 'rgba(0, 0, 0, 0.15)',
+                    borderTopWidth: 1,
+                    borderBottomWidth: 1,
                 }}
             >
                 <View
@@ -63,7 +110,7 @@ const ManageAccountsScreen = ({ route, navigation }) => {
                     }}
                 >
                     <Chip
-                        title={'Idk yet'}
+                        title={type === null ? 'Todos tipos' : types[type]}
                         icon={{
                             name: 'account-circle',
                             type: 'material-community',
@@ -76,23 +123,9 @@ const ManageAccountsScreen = ({ route, navigation }) => {
                         buttonStyle={{
                             backgroundColor: '#0074cb',
                         }}
-                        onPress={() => {}}
-                    />
-                    <Chip
-                        title={'Idk yet'}
-                        icon={{
-                            name: 'calendar',
-                            type: 'material-community',
-                            size: 20,
-                            color: 'white',
+                        onPress={() => {
+                            setTypeFilter(true);
                         }}
-                        containerStyle={{
-                            paddingLeft: 10,
-                        }}
-                        buttonStyle={{
-                            backgroundColor: '#0074cb',
-                        }}
-                        onPress={() => {}}
                     />
                 </View>
             </View>
@@ -109,8 +142,12 @@ const ManageAccountsScreen = ({ route, navigation }) => {
                         return (
                             <ListItem
                                 key={u.uid}
-                                onPress={() => {}}
-                                topDivider={i === 0}
+                                onPress={() => {
+                                    navigation.navigate('ManageAccountsView', {
+                                        id: u.uid,
+                                        data: u.data,
+                                    });
+                                }}
                                 bottomDivider
                             >
                                 <ListItem.Content>
@@ -125,6 +162,7 @@ const ManageAccountsScreen = ({ route, navigation }) => {
                                         title={types[u.data.type]}
                                     />
                                 </ListItem.Content>
+                                <ListItem.Chevron />
                             </ListItem>
                         );
                     })}
@@ -134,6 +172,25 @@ const ManageAccountsScreen = ({ route, navigation }) => {
     );
 };
 
-export default ManageAccountsScreen;
+export default ManageAccountsListScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(52, 52, 52, 0.3)',
+    },
+    modalView: {
+        width: '80%',
+        backgroundColor: 'white',
+        borderRadius: 10,
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+});

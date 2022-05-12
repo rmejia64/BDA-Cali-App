@@ -330,6 +330,7 @@ const ViewScreen = ({ route, navigation }) => {
                                     onPress={() => {
                                         openMap({
                                             end: data.client.address.formatted,
+                                            // provider: 'google',
                                         });
                                     }}
                                 >

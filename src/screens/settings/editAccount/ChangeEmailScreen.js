@@ -96,7 +96,7 @@ const ChangeEmailScreen = ({ route, navigation }) => {
             </Modal>
             <View style={{ width: '80%' }}>
                 <Text style={styles.heading}>Cambiar Email</Text>
-                <Text>
+                <Text style={{ color: 'gray' }}>
                     Si desea cambiar su correo electrónico, ingrese uno nuevo a
                     continuación.
                 </Text>
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
         marginBottom: 15,
     },
     button: {
-        backgroundColor: '#0c4484',
+        backgroundColor: '#0074cb',
         width: '100%',
         padding: 15,
         borderRadius: 15,

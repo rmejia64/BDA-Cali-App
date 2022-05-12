@@ -35,7 +35,7 @@ const SettingsScreen = ({ navigation }) => {
             {data.type === 'admin' ? (
                 <ListItem
                     onPress={() => {
-                        navigation.push('ManageAccounts');
+                        navigation.push('ManageAccountsList');
                     }}
                     bottomDivider
                 >
@@ -62,18 +62,6 @@ const SettingsScreen = ({ navigation }) => {
                     <ListItem.Chevron />
                 </ListItem>
             ) : null}
-            {/* <ListItem
-                onPress={() => {
-                    navigation.push('Language');
-                }}
-                bottomDivider
-            >
-                <Icon name={'translate'} size={20} />
-                <ListItem.Content>
-                    <ListItem.Title>Idioma</ListItem.Title>
-                </ListItem.Content>
-                <ListItem.Chevron />
-            </ListItem> */}
             <ListItem onPress={handleSignout} bottomDivider>
                 <Icon name={'logout'} size={20} color={'red'} />
                 <ListItem.Content>

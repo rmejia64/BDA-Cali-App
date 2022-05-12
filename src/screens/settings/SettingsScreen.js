@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import SettingsListScreen from './SettingsListScreen';
-import ManageAccountsScreen from './admin/ManageAccountsScreen';
+import ManageAccountsListScreen from './admin/ManageAccountsListScreen';
+import ManageAccountsViewScreen from './admin/ManageAccountsViewScreen';
 import CreateAccountScreen from './admin/CreateAccountScreen';
 import LanguageScreen from './LanguageScreen';
 import EditAccountListScreen from './editAccount/EditAccountListScreen';
@@ -35,9 +36,14 @@ const SettingsScreen = () => {
                 options={{ title: 'Cambia la Contraseña' }}
             />
             <Stack.Screen
-                name='ManageAccounts'
-                component={ManageAccountsScreen}
+                name='ManageAccountsList'
+                component={ManageAccountsListScreen}
                 options={{ title: 'Cuentas de Administración' }}
+            />
+            <Stack.Screen
+                name='ManageAccountsView'
+                component={ManageAccountsViewScreen}
+                options={{ title: 'Cambiar cuenta' }}
             />
             <Stack.Screen
                 name='CreateAccount'
