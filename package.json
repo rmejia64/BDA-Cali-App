@@ -7,7 +7,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "eject": "expo eject"
+    "eject": "expo eject",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@react-native-community/datetimepicker": "4.0.0",
@@ -16,7 +17,8 @@
     "@react-navigation/native": "^6.0.6",
     "@react-navigation/native-stack": "^6.2.5",
     "@reduxjs/toolkit": "^1.8.1",
-    "expo": "~44.0.0",
+    "deprecated-react-native-prop-types": "^5.0.0",
+    "expo": "^50.0.8",
     "expo-dev-client": "~0.8.5",
     "expo-device": "^4.1.1",
     "expo-file-system": "~13.1.4",
@@ -25,8 +27,10 @@
     "expo-screen-orientation": "~4.1.1",
     "firebase": "^9.6.7",
     "formik": "^2.2.9",
-    "react": "17.0.1",
-    "react-native": "0.64.3",
+    "metro-cache": "^0.80.6",
+    "patch-package": "^8.0.0",
+    "react": "18.0.0",
+    "react-native": "^0.73.5",
     "react-native-elements": "^3.4.2",
     "react-native-get-random-values": "~1.7.0",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
@@ -38,11 +42,14 @@
     "react-native-signature-canvas": "^4.3.0",
     "react-native-vector-icons": "^9.0.0",
     "react-native-web": "0.17.1",
+    "react-native-webview": "^13.8.1",
     "react-redux": "^7.2.8",
+    "react-test-renderer": "18.0.0",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.9"
+    "@babel/core": "^7.12.9",
+    "metro": "^0.80.6"
   },
   "private": true
 }
